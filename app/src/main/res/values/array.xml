@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <array name="test">
+        <item>選擇照片</item>
+        <item>拍攝照片</item>
+    </array>
+
+
+    <array name="reasons">
+        <item>紅線違規停車</item>
+        <item>黃線違規停車(熄火超過三分鐘)</item>
+        <item>汽車佔用機車格</item>
+        <item>佔用殘障專用停車格</item>
+        <item>其他(...)</item>
+    </array>
+
+
+    <array name="receiver">
+        <item>台北市警察局長信箱</item>
+        <item>新北市警察局長信箱</item>
+    </array>
+
+    <array name="form_item_options">
+        <item>檢視</item>
+        <item>刪除</item>
+    </array>
+
+
+</resources>
