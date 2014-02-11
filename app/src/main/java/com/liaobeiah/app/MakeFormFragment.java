@@ -14,7 +14,10 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import java.io.File;
 import java.util.Calendar;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * A fragment representing a single Item detail screen.
@@ -100,11 +103,25 @@ public class MakeFormFragment extends Fragment {
         Spinner spinner = (Spinner)rootView.findViewById(R.id.spinner_reason);
         spinner.setAdapter(adapter);
 
-        adapter = ArrayAdapter.createFromResource(rootView.getContext(),
-            R.array.receiver, android.R.layout.simple_list_item_1);
+        // Setup police mail spinner
+        Map<String, String> map = ResourceUtils.getHashMapResource(getActivity(), R.xml.police_email);
+
+        //String[] keys = new String[10];
+        //keys = map.keySet().toArray(keys);
+
+        ArrayAdapter<String> adapter2 = new ArrayAdapter<String>(
+                getActivity() ,android.R.layout.simple_list_item_1);
+
+
+        for (String key : map.keySet()) {
+            adapter2.add(key);
+        }
+
+        //adapter = ArrayAdapter.createFromResource(rootView.getContext(),
+           // R.array.receiver, android.R.layout.simple_list_item_1);
 
         spinner = (Spinner)rootView.findViewById(R.id.spinner_receiver);
-        spinner.setAdapter(adapter);
+        spinner.setAdapter(adapter2);
 
         return rootView;
     }
@@ -116,9 +133,7 @@ public class MakeFormFragment extends Fragment {
 
         if (savedInstance != null ) {
 
-            setPictureFilePath(0, savedInstance.getString(FormConstants.PIC_URI_1));
-
-
+            //setPictureFilePath(0, savedInstance.getString(FormConstants.PIC_URI_1));
         }
     }
 
@@ -133,6 +148,18 @@ public class MakeFormFragment extends Fragment {
 
     }
 
+    public void reloadEventThumbnail(UUID uuid, int index) {
+        File file = FileSystemHelper.getEventThumbnail(getActivity(), uuid, index);
+        if (file.exists()) {
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+            options.inPurgeable = true;
+            Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath(), options);
+            _imageViews[index].setImageBitmap(bitmap);
+        }
+    }
+
+    /*
     public void setPictureFilePath(int index, String filePath) {
         _pictureFilePaths[index] = filePath;
 
@@ -142,9 +169,11 @@ public class MakeFormFragment extends Fragment {
 
         _imageViews[index].setImageBitmap(bitmap);
 
-    }
+    }*/
 
+    /*
     public String getPictureFilePath(int index) {
         return _pictureFilePaths[index];
     }
+    */
 }

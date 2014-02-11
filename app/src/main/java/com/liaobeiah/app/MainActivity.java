@@ -1,6 +1,7 @@
 package com.liaobeiah.app;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -24,6 +25,7 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.UUID;
 
 public class MainActivity extends ActionBarActivity
         implements ItemListFragment.Callbacks, RequestFormTask.Listener {
@@ -36,6 +38,7 @@ public class MainActivity extends ActionBarActivity
     private SQLiteDatabase _database;
     private ItemListFragment _itemListFragment;
     private PlaceholderFragment _placeHolderFragment;
+    private ProgressDialog _progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,9 +110,13 @@ public class MainActivity extends ActionBarActivity
     }
 
     @Override
-    public void onTaskFinish(int resultCode, File docxFile) {
+    public void onTaskFinish(int resultCode, ContentValues contentValues) {
+        if (_progressDialog!= null) {
+            _progressDialog.dismiss();
+            _progressDialog = null;
+        }
         if (resultCode == 0) {
-            submitFormViaMail(new Bundle());
+            submit(contentValues);
         }
     }
 
@@ -309,6 +316,9 @@ public class MainActivity extends ActionBarActivity
                 _itemListFragment.changeCursor(cursor);
 
                 // start request for making form.
+                _progressDialog = new ProgressDialog(this);
+                _progressDialog.setMessage("Please Wait");
+                _progressDialog.show();
                 new RequestFormTask(this, contentValues, this).execute();
             } else {
                 Toast.makeText(getBaseContext(), "你人真好!", Toast.LENGTH_LONG).show();
@@ -333,48 +343,43 @@ public class MainActivity extends ActionBarActivity
         }
     }
 
-    private void submitFormViaMail( Bundle extras ) {
 
-
+    private void submit( ContentValues contentValues ) {
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         Intent emailIntent = new Intent(Intent.ACTION_SEND_MULTIPLE);
         emailIntent.setType("message/rfc822");
         emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{"dokinkon@gmail.com"});
-        emailIntent.putExtra(Intent.EXTRA_CC, sharedPreferences.getString("key_email", ""));
+        emailIntent.putExtra(Intent.EXTRA_CC, sharedPreferences.getString("pref_email", ""));
         emailIntent.setType("text/plain");
         emailIntent.putExtra(Intent.EXTRA_SUBJECT, "[違規檢舉] 車號: "
-                + extras.getString(FormConstants.VEHICLE_LICENSE));
+                + contentValues.getAsString(FormConstants.VEHICLE_LICENSE));
 
-        String textContent = "敬愛的警官\n\n" + "我要檢舉交通違規\n" +
-                "違規日期:" + extras.getString(FormConstants.DATE) + "\n" +
-                "違規時間:" + extras.getString(FormConstants.TIME) + "\n" +
-                "違規車牌:" + extras.getString(FormConstants.VEHICLE_LICENSE) + "\n"+
-                "違規地點:" + extras.getString(FormConstants.LOCATION) + "\n" +
-                "違規事由:" + extras.getString(FormConstants.REASON) + "\n" +
-                "補充說明:" + extras.getString(FormConstants.COMMENT) + "\n\n" +
-                "檢舉人姓名:" + sharedPreferences.getString("reporter_name", "") + "\n" +
-                "聯絡電話:" + sharedPreferences.getString("phone", "") + "\n" +
-                "聯絡地址:" + sharedPreferences.getString("address", "");
+        String textContent = "敬愛的警官\n\n" + "我要檢舉交通違規，請見附加檔案。\n";
 
         emailIntent.putExtra(Intent.EXTRA_TEXT, textContent);
 
         // Android multiple email attachments using intent
         // http://stackoverflow.com/questions/2264622/android-multiple-email-attachments-using-intent
         ArrayList<Uri> uris = new ArrayList<Uri>();
-        String[] filePaths = new String[3];
-        filePaths[0] = extras.getString(FormConstants.PIC_URI_1);
-        filePaths[1] = extras.getString(FormConstants.PIC_URI_2);
-        filePaths[2] = extras.getString(FormConstants.PIC_URI_3);
 
-        int index = 0;
+        // Append Photos...
+        UUID uuid = UUID.fromString(contentValues.getAsString(FormConstants.UUID));
+        int index;
         for (index = 0;index < 3;index++) {
 
-            if ( filePaths[index] != null && filePaths[index] !="" ) {
-                File attachmentFile = new File(filePaths[index]);
-                Uri uri = Uri.fromFile(attachmentFile);
+            File file = FileSystemHelper.getEventPicture(this, uuid, 0);
+            if (file.exists()) {
+                Uri uri = Uri.fromFile(file);
                 uris.add(uri);
             }
+        }
+
+        // Append Form...
+        File file = FileSystemHelper.getEventForm(this, uuid);
+        if (file.exists()) {
+            Uri uri = Uri.fromFile(file);
+            uris.add(uri);
         }
 
         emailIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);

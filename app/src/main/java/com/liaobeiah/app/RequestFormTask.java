@@ -32,14 +32,14 @@ public class RequestFormTask extends AsyncTask<Bundle, Void, Void> {
 
 
     public interface Listener {
-        public void onTaskFinish(int resultCode, File docxFile);
+        public void onTaskFinish(int resultCode, ContentValues contentValues);
     }
 
     private Context _context;
     private SharedPreferences _preferences;
     private ContentValues _contentValues;
     private Listener _listener;
-    private File _docxFile;
+
     private static final String TAG = "RequestFormTask";
 
     RequestFormTask(Context context, ContentValues contentValues, Listener listener) {
@@ -105,11 +105,11 @@ public class RequestFormTask extends AsyncTask<Bundle, Void, Void> {
             InputStream inputStream = response.getEntity().getContent();
             UUID uuid = UUID.fromString(_contentValues.getAsString(FormConstants.UUID));
 
-            _docxFile = FileSystemHelper.getEventForm(_context, uuid);
-            if (_docxFile.exists()) {
-                _docxFile.delete();
+            File file = FileSystemHelper.getEventForm(_context, uuid);
+            if (file.exists()) {
+                file.delete();
             }
-            OutputStream outputStream = new FileOutputStream(_docxFile);
+            OutputStream outputStream = new FileOutputStream(file);
 
             int read;
             byte[] bytes = new byte[1024];
@@ -132,7 +132,7 @@ public class RequestFormTask extends AsyncTask<Bundle, Void, Void> {
     @Override
     protected void onPostExecute(Void result) {
         if (_listener!=null) {
-            _listener.onTaskFinish(0, _docxFile);
+            _listener.onTaskFinish(0, _contentValues);
         }
 
     }

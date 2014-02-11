@@ -58,31 +58,28 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:id="@+id/imageView1"
-                    android:layout_gravity="center_vertical"
+                    android:layout_gravity="center"
                     android:layout_weight="1"
                     android:clickable="true"
                     android:onClick="onImageViewClicked"
                     android:cropToPadding="true"
                     android:scaleType="fitXY" />
 
-                <TextView
+                <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="照片1"
-                    android:id="@+id/textView5"
-                    android:gravity="center"
-                    android:layout_gravity="center"
-                    android:background="@drawable/dark_grey_transparent"
-                    android:padding="8dp"
-                    android:textColor="#FFFFFF"
-                    android:textStyle="bold" />
+                    android:id="@+id/imageView"
+                    android:src="@drawable/ic_action_camera"
+                    android:layout_gravity="center" />
+
             </FrameLayout>
 
             <FrameLayout
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_weight="1"
-                android:padding="2dp">
+                android:padding="2dp"
+                android:background="@drawable/dark_grey_transparent">
 
                 <ImageView
                     android:layout_width="match_parent"
@@ -94,26 +91,21 @@
                     android:cropToPadding="true"
                     android:scaleType="fitXY" />
 
-                <TextView
+                <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="照片2"
-                    android:id="@+id/textView9"
-                    android:gravity="center"
-                    android:shadowColor="@color/black_overlay"
-                    android:singleLine="false"
-                    android:textColor="#FFFFFF"
-                    android:background="@drawable/dark_grey_transparent"
-                    android:layout_gravity="center"
-                    android:padding="8dp"
-                    android:textStyle="bold" />
+                    android:id="@+id/imageView4"
+                    android:src="@drawable/ic_action_camera"
+                    android:layout_gravity="center" />
+
             </FrameLayout>
 
             <FrameLayout
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_weight="1"
-                android:padding="2dp">
+                android:padding="2dp"
+                android:background="@drawable/dark_grey_transparent">
 
                 <ImageView
                     android:layout_width="match_parent"
@@ -125,12 +117,13 @@
                     android:scaleType="fitXY"
                     android:cropToPadding="true" />
 
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:text="照片3"
-                    android:id="@+id/textView10"
-                    android:gravity="center" />
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/imageView5"
+                    android:src="@drawable/ic_action_camera"
+                    android:layout_gravity="center" />
+
             </FrameLayout>
         </LinearLayout>
 
@@ -218,6 +211,37 @@
             tools:context="com.liaobeiah.app.MakeFormFragment"
             xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:tools="http://schemas.android.com/tools"
+            android:id="@+id/textView4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textIsSelectable="true"
+            android:text="違規車牌"
+            android:paddingLeft="16dp"
+            android:paddingTop="16dp"
+            android:textStyle="bold" />
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:background="@android:color/darker_gray"
+            android:paddingLeft="5dp"
+            android:paddingRight="2dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp" />
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text|textCapCharacters"
+            android:ems="10"
+            android:id="@+id/editTextVehicleLicense"
+            android:hint="請輸入車牌" />
+
+        <TextView
+            style="?android:attr/textAppearanceLarge"
+            tools:context="com.liaobeiah.app.MakeFormFragment"
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:tools="http://schemas.android.com/tools"
             android:id="@+id/textView11"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -241,37 +265,6 @@
             android:layout_height="wrap_content"
             android:id="@+id/editTextLocation"
             android:hint="請輸入違規地點" />
-
-        <TextView
-            style="?android:attr/textAppearanceLarge"
-            tools:context="com.liaobeiah.app.MakeFormFragment"
-            xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:tools="http://schemas.android.com/tools"
-            android:id="@+id/textView4"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textIsSelectable="true"
-            android:text="違規車牌"
-            android:layout_gravity="center"
-            android:paddingLeft="16dp"
-            android:paddingTop="16dp"
-            android:textStyle="bold" />
-        <View
-            android:layout_width="fill_parent"
-            android:layout_height="1dp"
-            android:background="@android:color/darker_gray"
-            android:paddingLeft="5dp"
-            android:paddingRight="2dp"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp" />
-
-        <EditText
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="text|textCapCharacters"
-            android:ems="10"
-            android:id="@+id/editTextVehicleLicense"
-            android:hint="請輸入車牌" />
 
         <TextView
             style="?android:attr/textAppearanceLarge"

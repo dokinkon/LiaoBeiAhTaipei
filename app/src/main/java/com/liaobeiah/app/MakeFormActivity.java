@@ -16,6 +16,7 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -33,6 +34,7 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -75,8 +77,6 @@ public class MakeFormActivity extends FragmentActivity
     private int _currentImageIndex;
     private int _formState = FormStateDraft;
 
-    private String mCurrentPhotoPath;
-
     private LocationManager _locationManager;
     private MakeFormFragment _makeFormFragment;
 
@@ -96,6 +96,12 @@ public class MakeFormActivity extends FragmentActivity
 
         // Show the Up button in the action bar.
         getActionBar().setDisplayHomeAsUpEnabled(true);
+
+
+
+
+
+
 
 
         // savedInstanceState is non-null when there is fragment state
@@ -125,6 +131,8 @@ public class MakeFormActivity extends FragmentActivity
             //_formUuid = UUID.fromString(savedInstanceState.getString(FORM_UUID));
             _contentValues = savedInstanceState.getParcelable(CONTENT_VALUES);
         }
+
+
 
 
         //_makeFormFragment.setUUID(_formUuid);
@@ -216,17 +224,8 @@ public class MakeFormActivity extends FragmentActivity
     private void doAbortEditing() {
         Log.i(TAG, "doAbortEditing");
         // 1. remove pictures
-        int i = 0;
-        for (i = 0;i<3;i++) {
+        // FIXME!
 
-            String filePath = _makeFormFragment.getPictureFilePath(i);
-
-
-            File file = new File( filePath );
-            if (file.exists()) {
-                file.delete();
-            }
-        }
     }
 
     @Override
@@ -261,51 +260,15 @@ public class MakeFormActivity extends FragmentActivity
         return super.onCreateDialog(id, savedInstanced);
     }
 
-/*
-    private String genPictureFilePath(int photoIndex) {
-        String fileName = _formUuid.toString() + "-PIC-" + photoIndex + ".jpg";
-
-
-        File picDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        picDir.mkdir();
-
-        File file = new File(picDir, fileName);
-        return file.getAbsolutePath();
-    }
-*/
-
-    private File createImageFile(int photoIndex) throws IOException {
-        // Create an image file name
-
-        /*
-        String fileName = _formUuid.toString() + "-PIC-" + photoIndex + ".jpg";
-
-
-        File picDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        picDir.mkdir();
-
-        File file = new File(picDir, fileName);
-        // Save a file: path for use with ACTION_VIEW intents
-        mCurrentPhotoPath = file.getAbsolutePath();
-        */
-
-        UUID uuid = UUID.fromString(_contentValues.getAsString(FormConstants.UUID));
-        File file = FileSystemHelper.getEventPicture(this, uuid, photoIndex);
-        mCurrentPhotoPath = file.getAbsolutePath();
-        return file;
-    }
-
     private void dispatchTakePictureIntent(int photoIndex) {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         // Ensure that there's a camera activity to handle the intent
         if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
             // Create the File where the photo should go
-            File photoFile = null;
-            try {
-                photoFile = createImageFile(photoIndex);
-            } catch (IOException ex) {
-                // Error occurred while creating the File
-            }
+
+            UUID uuid = UUID.fromString(_contentValues.getAsString(FormConstants.UUID));
+            File photoFile = FileSystemHelper.getEventPicture(this, uuid, photoIndex);
+
             // Continue only if the File was successfully created
             if (photoFile != null) {
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,
@@ -349,8 +312,9 @@ public class MakeFormActivity extends FragmentActivity
 
     private boolean validateFields() {
 
+        UUID uuid = UUID.fromString(_contentValues.getAsString(FormConstants.UUID));
         // 1. check picture
-        File file = new File( _makeFormFragment.getPictureFilePath(0));
+        File file = FileSystemHelper.getEventPicture(this, uuid, 0);
         if (!file.exists()) {
             Toast.makeText(this, "請提供違規照片", Toast.LENGTH_SHORT).show();
             return false;
@@ -402,6 +366,10 @@ public class MakeFormActivity extends FragmentActivity
         _formFields.putString(FormConstants.VEHICLE_LICENSE, editText.getText().toString());
         _contentValues.put(FormConstants.VEHICLE_LICENSE, spinner.getSelectedItem().toString());
 
+        // Parse Police Mail from Spinner...
+        spinner = (Spinner)findViewById(R.id.spinner_receiver);
+        _contentValues.put(FormConstants.RECEIVER, spinner.getSelectedItem().toString());
+
         Intent intent = new Intent();
         intent.putExtras(_formFields);
         intent.putExtra(FormConstants.CONTENT_VALUE, _contentValues);
@@ -451,15 +419,33 @@ public class MakeFormActivity extends FragmentActivity
     }
 
 
+    private void generateThumbnail(UUID uuid, int index) {
+        File srcImage = FileSystemHelper.getEventPicture(this, uuid, index);
+        Bitmap thumbnail = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(srcImage.getAbsolutePath()),
+                256, 256);
+
+        try {
+            OutputStream outputStream = new FileOutputStream(FileSystemHelper.getEventThumbnail(this, uuid, index));
+            thumbnail.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == CAMERA_RESULT && resultCode == RESULT_OK) {
 
-
+            UUID uuid = UUID.fromString(_contentValues.getAsString(FormConstants.UUID));
+            String photoPath = FileSystemHelper.getEventPicture(this, uuid, _currentImageIndex ).getAbsolutePath();
+            /*
             Bitmap photo;
             if ( data == null ) {
 
-                photo = loadBitmap(mCurrentPhotoPath);
+
+
+                photo = loadBitmap(photoPath);
 
                 //BitmapFactory.Options options = new BitmapFactory.Options();
                 //options.inPreferredConfig = Bitmap.Config.ARGB_8888;
@@ -468,16 +454,17 @@ public class MakeFormActivity extends FragmentActivity
             } else {
                 photo = (Bitmap) data.getExtras().get("data");
             }
+            */
 
-            //=
 
             // Save Bitmap into file system.
-            String filePath = mCurrentPhotoPath;//(String)data.getExtras().get("data");  //savePicture(photo);
-            Toast.makeText(this, "FilePath=" + filePath, Toast.LENGTH_LONG).show();
+            //String filePath = mCurrentPhotoPath;//(String)data.getExtras().get("data");  //savePicture(photo);
+            Toast.makeText(this, "FilePath=" + photoPath, Toast.LENGTH_LONG).show();
 
-            putPictureFilePath(_currentImageIndex, filePath);
-            _makeFormFragment.setPictureFilePath(_currentImageIndex, mCurrentPhotoPath);
-
+            putPictureFilePath(_currentImageIndex, photoPath);
+            generateThumbnail(uuid, _currentImageIndex);
+            //_makeFormFragment.setPictureFilePath(_currentImageIndex, photoPath);
+            _makeFormFragment.reloadEventThumbnail(uuid, _currentImageIndex);
             //_currentImageView.setImageBitmap(photo);
 
         } else if (requestCode == GALLERY_RESULT && resultCode == RESULT_OK && null != data) {
@@ -500,7 +487,8 @@ public class MakeFormActivity extends FragmentActivity
                 e.printStackTrace();
             }
 
-            _makeFormFragment.setPictureFilePath(_currentImageIndex, dstPath);
+            _makeFormFragment.reloadEventThumbnail(uuid, _currentImageIndex);
+           // _makeFormFragment.setPictureFilePath(_currentImageIndex, dstPath);
         }
     }
 
@@ -538,6 +526,30 @@ public class MakeFormActivity extends FragmentActivity
         }
     }
 
+/*
+    private class Adapter implements SpinnerAdapter {
+        @Override
+        public long getItemId(int i) {
+            return i;
+        }
+
+        public void unregisterDataSetObserver (DataSetObserver observer) {
+
+        }
+
+        public void registerDataSetObserver (DataSetObserver observer) {
+
+        }
+
+        public boolean isEmpty () {
+            return false;
+        }
+
+        public int getCount () {
+            return 0;
+        }
+    }
+*/
 
 
 
