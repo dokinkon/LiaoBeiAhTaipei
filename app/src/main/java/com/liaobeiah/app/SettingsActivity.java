@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.RingtonePreference;
@@ -62,6 +61,18 @@ public class SettingsActivity extends PreferenceActivity {
 
         // Add 'general' preferences.
         addPreferencesFromResource(R.xml.pref_general);
+
+        //EditTextPreference namePreference = (EditTextPreference)findPreference("reporter_name");
+        //namePreference.setSummary(namePreference.getText());
+        bindPreferenceSummaryToValue(findPreference("pref_name"));
+        bindPreferenceSummaryToValue(findPreference("pref_address"));
+        bindPreferenceSummaryToValue(findPreference("pref_phone"));
+        bindPreferenceSummaryToValue(findPreference("pref_email"));
+
+
+
+
+
 
         /*
         // Add 'notifications' preferences, and a corresponding header.

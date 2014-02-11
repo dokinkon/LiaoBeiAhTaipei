@@ -5,8 +5,10 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 
@@ -22,6 +24,8 @@ import com.liaobeiah.app.dummy.DummyContent;
  * interface.
  */
 public class ItemListFragment extends ListFragment {
+
+    private static final String TAG = "ItemListFragment";
 
     /**
      * The serialization (saved instance state) Bundle key representing the
@@ -68,6 +72,10 @@ public class ItemListFragment extends ListFragment {
         }
     };
 
+
+    private SQLiteDatabase _database;
+    private CursorAdapter _adapter;
+
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
@@ -75,14 +83,17 @@ public class ItemListFragment extends ListFragment {
     public ItemListFragment() {
     }
 
-    public void refresh() {
+    private void refresh() {
+
+        Log.i(TAG, "refresh");
+
 
         Activity activity = getActivity();
 
         DatabaseHelper databaseHelper = new DatabaseHelper(getActivity());
-        SQLiteDatabase database = databaseHelper.getReadableDatabase();
-        if (database.isOpen()) {
-            Cursor cursor = database.rawQuery("select * from " + FormConstants.TABLE_NAME, null);
+        _database = databaseHelper.getReadableDatabase();
+        if (_database.isOpen()) {
+            Cursor cursor = _database.rawQuery("select * from " + FormConstants.TABLE_NAME, null);
 
 
             String[] from = new String[]{ FormConstants.PIC_URI_1, FormConstants.VEHICLE_LICENSE,
@@ -93,10 +104,10 @@ public class ItemListFragment extends ListFragment {
 
             // FIXME
             // SimpleCursorAdapter require API11, but current min API is 10.
-            SimpleCursorAdapter adapter = new SimpleCursorAdapter(getActivity(), R.layout.form_item,
-                    cursor, from, to, 0);
+            _adapter = new SimpleCursorAdapter(getActivity(), R.layout.form_item,
+                    cursor, from, to);
 
-            setListAdapter(adapter);
+            setListAdapter(_adapter);
         }
     }
 
@@ -104,18 +115,25 @@ public class ItemListFragment extends ListFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        refresh();
+        Log.i(TAG, "onCreate");
+        //refresh();
     }
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        Log.i(TAG, "onViewCreated");
 
         // Restore the previously serialized activated item position.
         if (savedInstanceState != null
                 && savedInstanceState.containsKey(STATE_ACTIVATED_POSITION)) {
             setActivatedPosition(savedInstanceState.getInt(STATE_ACTIVATED_POSITION));
         }
+
+        refresh();
+
+
+
 
         getListView().setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
 
@@ -130,9 +148,14 @@ public class ItemListFragment extends ListFragment {
 
     }
 
+    public void changeCursor(Cursor cursor) {
+        _adapter.changeCursor(cursor);
+    }
+
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
+        Log.i(TAG, "onAttach");
 
         // Activities containing this fragment must implement its callbacks.
         if (!(activity instanceof Callbacks)) {

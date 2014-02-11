@@ -3,7 +3,7 @@
     <!-- NOTE: EditTextPreference accepts EditText attributes. -->
     <!-- NOTE: EditTextPreference's summary should be set to its value by the activity code. -->
     <EditTextPreference
-        android:key="reporter_name"
+        android:key="pref_name"
         android:title="@string/pref_title_display_name"
         android:defaultValue="@string/pref_default_display_name"
         android:selectAllOnFocus="true"
@@ -13,7 +13,7 @@
         android:maxLines="1" />
 
     <EditTextPreference
-        android:key="address"
+        android:key="pref_address"
         android:title="@string/address"
         android:selectAllOnFocus="true"
         android:inputType="textCapWords"
@@ -21,7 +21,7 @@
         android:singleLine="false" />
 
     <EditTextPreference
-        android:key="phone"
+        android:key="pref_phone"
         android:title="@string/phone"
         android:selectAllOnFocus="true"
         android:inputType="textCapWords"
@@ -29,7 +29,7 @@
         android:singleLine="true" />
 
     <EditTextPreference
-        android:key="key_email"
+        android:key="pref_email"
         android:title="@string/email"
         android:selectAllOnFocus="true"
         android:inputType="textCapWords"

@@ -33,54 +33,53 @@ public class MainActivity extends ActionBarActivity
     private static String TAG = "MainActivity";
 
     private DatabaseHelper _databaseHelper;
+    private SQLiteDatabase _database;
     private ItemListFragment _itemListFragment;
     private PlaceholderFragment _placeHolderFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.i(TAG, "onCreate");
         setContentView(R.layout.activity_main);
 
-        // FIXME
-        //File path = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        //Toast.makeText(this, path.getAbsolutePath(), Toast.LENGTH_LONG).show();
 
         if (savedInstanceState == null) {
 
-            _databaseHelper = new DatabaseHelper(this);
-            SQLiteDatabase database = _databaseHelper.getReadableDatabase();
-            _itemListFragment = new ItemListFragment();
-            _placeHolderFragment = new PlaceholderFragment();
-            //refreshContent();
 
-            if (database.isOpen()) {
-                Cursor cursor = database.rawQuery("select * from " + FormConstants.TABLE_NAME, null);
-                Log.i(TAG, "QUERY OK :" + cursor.getCount());
+        }
 
-                if ( cursor.getCount() > 0 ) {
-                    getSupportFragmentManager().beginTransaction()
-                            .add(R.id.container, _itemListFragment)
-                            .commit();
 
-                } else {
-                    getSupportFragmentManager().beginTransaction()
-                            .add(R.id.container, new PlaceholderFragment())
-                            .commit();
+        _databaseHelper = new DatabaseHelper(this);
+        _database = _databaseHelper.getWritableDatabase();
+        _itemListFragment = new ItemListFragment();
+        _placeHolderFragment = new PlaceholderFragment();
 
-                }
+        if (_database.isOpen()) {
+            Cursor cursor = _database.rawQuery("select * from " + FormConstants.TABLE_NAME, null);
+            Log.i(TAG, "QUERY OK :" + cursor.getCount());
+
+            if ( cursor.getCount() > 0 ) {
+                getSupportFragmentManager().beginTransaction()
+                        .add(R.id.container, _itemListFragment)
+                        .commit();
 
             } else {
-                Log.e(TAG, "Database not open!");
+                getSupportFragmentManager().beginTransaction()
+                        .add(R.id.container, new PlaceholderFragment())
+                        .commit();
+
             }
+
+        } else {
+            Log.e(TAG, "Database not open!");
         }
 
     }
 
     private void refreshContent() {
-        SQLiteDatabase database = _databaseHelper.getReadableDatabase();
-
-        if (database.isOpen()) {
-            Cursor cursor = database.rawQuery("select * from " + FormConstants.TABLE_NAME, null);
+        if (_database.isOpen()) {
+            Cursor cursor = _database.rawQuery("select * from " + FormConstants.TABLE_NAME, null);
             Log.i(TAG, "QUERY OK :" + cursor.getCount());
 
             if ( cursor.getCount() > 0 ) {
@@ -88,7 +87,7 @@ public class MainActivity extends ActionBarActivity
                         .replace(R.id.container, _itemListFragment)
                         .commitAllowingStateLoss();
 
-                _itemListFragment.refresh();
+                //_itemListFragment.refresh();
 
             } else {
                 getSupportFragmentManager().beginTransaction()
@@ -115,12 +114,12 @@ public class MainActivity extends ActionBarActivity
     }
 
     class ItemOperationListener implements DialogInterface.OnClickListener {
-        private DatabaseHelper _databaseHelper;
+        //private DatabaseHelper _databaseHelper;
         private long _rowId;
 
 
         ItemOperationListener(DatabaseHelper databaseHelper, long rowId) {
-            _databaseHelper = databaseHelper;
+            //_databaseHelper = databaseHelper;
             _rowId = rowId;
         }
 
@@ -129,11 +128,11 @@ public class MainActivity extends ActionBarActivity
 
             } else if (which == 1) {
                 // try to remove item from database...
-                SQLiteDatabase database = _databaseHelper.getWritableDatabase();
-                if ( database.isOpen()) {
+                //SQLiteDatabase database = _databaseHelper.getWritableDatabase();
+                if ( _database.isOpen()) {
 
                     // delete reference pictures
-                    Cursor cursor = database.rawQuery("select * from " + FormConstants.TABLE_NAME + " where "
+                    Cursor cursor = _database.rawQuery("select * from " + FormConstants.TABLE_NAME + " where "
                             + FormConstants._ID + " = " + _rowId, null);
 
                     cursor.moveToFirst();
@@ -155,7 +154,7 @@ public class MainActivity extends ActionBarActivity
                         }
                     }
 
-                    database.delete(FormConstants.TABLE_NAME, FormConstants._ID + " = " + _rowId, null);
+                    _database.delete(FormConstants.TABLE_NAME, FormConstants._ID + " = " + _rowId, null);
                     refreshContent();
 
                 } else {
@@ -285,10 +284,10 @@ public class MainActivity extends ActionBarActivity
         contentValues.put(FormConstants.TIME, bundle.getString(FormConstants.TIME));
         contentValues.put(FormConstants.REASON, bundle.getString(FormConstants.REASON));
         contentValues.put(FormConstants.VEHICLE_LICENSE, bundle.getString(FormConstants.VEHICLE_LICENSE));
-        DatabaseHelper databaseHelper = new DatabaseHelper(this);
-        SQLiteDatabase database = databaseHelper.getWritableDatabase();
+        //DatabaseHelper databaseHelper = new DatabaseHelper(this);
+        //SQLiteDatabase database = databaseHelper.getWritableDatabase();
 
-        long row = database.insert(FormConstants.TABLE_NAME, null, contentValues);
+        long row = _database.insert(FormConstants.TABLE_NAME, null, contentValues);
 
         Toast.makeText(this, "ROW = " + row, Toast.LENGTH_SHORT).show();
         refreshContent();
@@ -302,13 +301,15 @@ public class MainActivity extends ActionBarActivity
         if ( requestCode == REQUEST_MAKE_FORM) {
             if ( resultCode == RESULT_OK ) {
 
+                ContentValues contentValues = data.getParcelableExtra(FormConstants.CONTENT_VALUE);
+
                 insertOrUpdateToDatabase(data.getExtras());
 
+                Cursor cursor = _database.rawQuery("select * from " + FormConstants.TABLE_NAME, null);
+                _itemListFragment.changeCursor(cursor);
+
                 // start request for making form.
-                new RequestFormTask(this, new Bundle(data.getExtras()), this).execute();
-
-
-                //submitFormViaMail(data.getExtras());
+                new RequestFormTask(this, contentValues, this).execute();
             } else {
                 Toast.makeText(getBaseContext(), "你人真好!", Toast.LENGTH_LONG).show();
 
@@ -332,13 +333,11 @@ public class MainActivity extends ActionBarActivity
         }
     }
 
-
     private void submitFormViaMail( Bundle extras ) {
 
 
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        new RequestFormTask(this, extras).execute();
         Intent emailIntent = new Intent(Intent.ACTION_SEND_MULTIPLE);
         emailIntent.setType("message/rfc822");
         emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{"dokinkon@gmail.com"});

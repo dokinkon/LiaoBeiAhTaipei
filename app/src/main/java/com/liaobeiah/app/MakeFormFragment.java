@@ -3,7 +3,6 @@ package com.liaobeiah.app;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.media.Image;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -15,12 +14,7 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-
-import com.liaobeiah.app.dummy.DummyContent;
-
-import java.text.Normalizer;
 import java.util.Calendar;
-import java.util.UUID;
 
 /**
  * A fragment representing a single Item detail screen.
@@ -46,7 +40,7 @@ public class MakeFormFragment extends Fragment {
 
     private ImageView[] _imageViews;
     private String[] _pictureFilePaths;
-    private UUID _formUuid;
+    //private UUID _formUuid;
 
 
     /**
@@ -67,10 +61,10 @@ public class MakeFormFragment extends Fragment {
         Log.i(TAG, "onCreate");
     }
 
-    public void setUUID(UUID uuid) {
-        _formUuid = uuid;
+    //public void setUUID(UUID uuid) {
+        //_formUuid = uuid;
 
-    }
+    //}
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
