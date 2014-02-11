@@ -17,18 +17,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
     @Override
     public void onCreate(SQLiteDatabase db) {
-        /*
-        db.execSQL("CREATE TABLE " + FormConstants.TABLE_NAME
-                + "( " + FormConstants._ID + " integer primary key autoincrement"
-                + ", " + FormConstants.STATE + "integer);");
-        */
+
 
         db.execSQL("CREATE TABLE " + FormConstants.TABLE_NAME
                 + "( " + FormConstants._ID + " integer primary key autoincrement"
                 + ", " + FormConstants.STATE + " integer"
+                + ", " + FormConstants.UUID + " text"
                 + ", " + FormConstants.PIC_URI_1 + " text"
                 + ", " + FormConstants.PIC_URI_2 + " text"
                 + ", " + FormConstants.PIC_URI_3 + " text"
+                + ", " + FormConstants.THUMBNAIL_URI_0 + " text"
+                + ", " + FormConstants.THUMBNAIL_URI_2 + " text"
+                + ", " + FormConstants.THUMBNAIL_URI_3 + " text"
                 + ", " + FormConstants.DATE + " text"
                 + ", " + FormConstants.TIME + " text"
                 + ", " + FormConstants.LOCATION + " text"
@@ -36,8 +36,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + ", " + FormConstants.REASON + " text"
                 + ", " + FormConstants.COMMENT + " text"
                 + ", " + FormConstants.RECEIVER + " text);");
-
-                //+ " (id integer primary key autoincrement, name text);");
     }
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {

@@ -1,6 +1,7 @@
 package com.liaobeiah.app;
 
 import android.app.Activity;
+import android.content.ContentValues;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -10,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -42,8 +44,11 @@ public class MakeFormFragment extends Fragment {
 
 
     private ImageView[] _imageViews;
+    private TextView _dateView;
+    private TextView _timeView;
+    private EditText _licenseView;
+    private EditText _locationView;
     private String[] _pictureFilePaths;
-    //private UUID _formUuid;
 
 
     /**
@@ -64,14 +69,11 @@ public class MakeFormFragment extends Fragment {
         Log.i(TAG, "onCreate");
     }
 
-    //public void setUUID(UUID uuid) {
-        //_formUuid = uuid;
-
-    //}
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
+
+        Log.i(TAG, "onCreateView");
         View rootView = inflater.inflate(R.layout.fragment_make_form, container, false);
 
         _pictureFilePaths = new String[3];
@@ -105,10 +107,6 @@ public class MakeFormFragment extends Fragment {
 
         // Setup police mail spinner
         Map<String, String> map = ResourceUtils.getHashMapResource(getActivity(), R.xml.police_email);
-
-        //String[] keys = new String[10];
-        //keys = map.keySet().toArray(keys);
-
         ArrayAdapter<String> adapter2 = new ArrayAdapter<String>(
                 getActivity() ,android.R.layout.simple_list_item_1);
 
@@ -116,9 +114,6 @@ public class MakeFormFragment extends Fragment {
         for (String key : map.keySet()) {
             adapter2.add(key);
         }
-
-        //adapter = ArrayAdapter.createFromResource(rootView.getContext(),
-           // R.array.receiver, android.R.layout.simple_list_item_1);
 
         spinner = (Spinner)rootView.findViewById(R.id.spinner_receiver);
         spinner.setAdapter(adapter2);
@@ -159,21 +154,35 @@ public class MakeFormFragment extends Fragment {
         }
     }
 
-    /*
-    public void setPictureFilePath(int index, String filePath) {
-        _pictureFilePaths[index] = filePath;
+    public void restoreUIState(ContentValues contentValues) {
+        UUID uuid = UUID.fromString(contentValues.getAsString(FormConstants.UUID));
+        for (int i=0;i<3;i++ ) {
+            reloadEventThumbnail(uuid, i);
+        }
 
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-        Bitmap bitmap = BitmapFactory.decodeFile(filePath, options);
+        // TODO!
 
-        _imageViews[index].setImageBitmap(bitmap);
 
-    }*/
 
-    /*
-    public String getPictureFilePath(int index) {
-        return _pictureFilePaths[index];
     }
-    */
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

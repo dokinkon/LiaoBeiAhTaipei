@@ -17,7 +17,7 @@ public interface FormConstants extends BaseColumns {
     public static final String PIC_URI_1 = "pic_uri_1";
     public static final String PIC_URI_2 = "pic_uri_2";
     public static final String PIC_URI_3 = "pic_uri_3";
-    public static final String THUMBNAIL_URI_1 = "thumbnail_uri_1";
+    public static final String THUMBNAIL_URI_0 = "thumbnail_uri_1";
     public static final String THUMBNAIL_URI_2 = "thumbnail_uri_2";
     public static final String THUMBNAIL_URI_3 = "thumbnail_uri_3";
     public static final String UUID = "uuid";
@@ -26,5 +26,6 @@ public interface FormConstants extends BaseColumns {
     public static final String RECEIVER = "receiver";
     public static final String STATE = "state";
 
-
+    public static final int STATE_DRAFT = 0;
+    public static final int STATE_FINISH = 1;
 }

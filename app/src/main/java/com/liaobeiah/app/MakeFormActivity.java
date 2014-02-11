@@ -26,7 +26,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.DatePicker;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
@@ -62,25 +61,21 @@ public class MakeFormActivity extends FragmentActivity
     public static int FormStateComplete = 1;
 
     private static int DIALOG_UNFINISHED_CONFIRM = 1;
-    private static String FORM_UUID = "FORM_UUID";
+
     private static String CONTENT_VALUES = "ContentValues";
 
     private static String TAG = "MakeFormActivity";
     private static String MAKE_FORM_FRAGMENT_TAG = "MakeFormFragmentTag";
 
-    private Bundle _formFields;
-
     private ContentValues _contentValues;
 
 
-    private ImageView _currentImageView;
     private int _currentImageIndex;
-    private int _formState = FormStateDraft;
+
 
     private LocationManager _locationManager;
     private MakeFormFragment _makeFormFragment;
 
-    //private UUID _formUuid;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,14 +83,12 @@ public class MakeFormActivity extends FragmentActivity
         setContentView(R.layout.activity_item_detail);
         Log.i(TAG, "onCreate");
 
-
-        _formState = FormStateDraft;
-        _formFields = new Bundle();
         _locationManager = (LocationManager)getSystemService(LOCATION_SERVICE);
         _currentImageIndex = -1;
 
         // Show the Up button in the action bar.
         getActionBar().setDisplayHomeAsUpEnabled(true);
+
 
 
 
@@ -123,23 +116,29 @@ public class MakeFormActivity extends FragmentActivity
                     .add(R.id.item_detail_container, _makeFormFragment, MAKE_FORM_FRAGMENT_TAG)
                     .commit();
 
-            _contentValues = new ContentValues();
-            _contentValues.put(FormConstants.UUID, UUID.randomUUID().toString());
+            _contentValues = getIntent().getParcelableExtra(FormConstants.CONTENT_VALUE);
+            if (_contentValues == null) {
+                _contentValues = new ContentValues();
+                _contentValues.put(FormConstants.UUID, UUID.randomUUID().toString());
+            }
 
         } else {
             _makeFormFragment = (MakeFormFragment)getSupportFragmentManager().findFragmentByTag(MAKE_FORM_FRAGMENT_TAG);
-            //_formUuid = UUID.fromString(savedInstanceState.getString(FORM_UUID));
             _contentValues = savedInstanceState.getParcelable(CONTENT_VALUES);
         }
 
-
-
-
-        //_makeFormFragment.setUUID(_formUuid);
+        restoreUIState();
 
     }
 
+    private void restoreUIState() {
 
+
+
+
+
+
+    }
 
     protected void onResume () {
         super.onResume();
@@ -280,7 +279,6 @@ public class MakeFormActivity extends FragmentActivity
 
     public void onImageViewClicked(View view){
 
-        _currentImageView = (ImageView)view;
         if (view.getId() == R.id.imageView1) {
             _currentImageIndex = 0;
         } else if (view.getId() == R.id.imageView2) {
@@ -340,7 +338,7 @@ public class MakeFormActivity extends FragmentActivity
             return;
         }
 
-        _formState = FormStateComplete;
+        _contentValues.put(FormConstants.STATE, FormConstants.STATE_FINISH);
 
         // Parse Event Location...
         EditText location = (EditText)findViewById(R.id.editTextLocation);
@@ -348,22 +346,18 @@ public class MakeFormActivity extends FragmentActivity
 
         // Parse Date value.
         TextView dateView = (TextView)findViewById(R.id.textViewDate);
-        _formFields.putString(FormConstants.DATE, dateView.getText().toString());
         _contentValues.put(FormConstants.DATE, dateView.getText().toString());
 
         // Parse Time value
         TextView timeView = (TextView)findViewById(R.id.textViewTime);
-        _formFields.putString(FormConstants.TIME, timeView.getText().toString());
         _contentValues.put(FormConstants.TIME, timeView.getText().toString());
 
         // Parse Reason field
         Spinner spinner = (Spinner)findViewById(R.id.spinner_reason);
-        _formFields.putString(FormConstants.REASON, spinner.getSelectedItem().toString());
         _contentValues.put(FormConstants.REASON, spinner.getSelectedItem().toString());
 
         // Parse Vehicle License field
         EditText editText = (EditText)findViewById(R.id.editTextVehicleLicense);
-        _formFields.putString(FormConstants.VEHICLE_LICENSE, editText.getText().toString());
         _contentValues.put(FormConstants.VEHICLE_LICENSE, spinner.getSelectedItem().toString());
 
         // Parse Police Mail from Spinner...
@@ -371,7 +365,6 @@ public class MakeFormActivity extends FragmentActivity
         _contentValues.put(FormConstants.RECEIVER, spinner.getSelectedItem().toString());
 
         Intent intent = new Intent();
-        intent.putExtras(_formFields);
         intent.putExtra(FormConstants.CONTENT_VALUE, _contentValues);
 
         setResult(RESULT_OK, intent);
@@ -439,33 +432,13 @@ public class MakeFormActivity extends FragmentActivity
 
             UUID uuid = UUID.fromString(_contentValues.getAsString(FormConstants.UUID));
             String photoPath = FileSystemHelper.getEventPicture(this, uuid, _currentImageIndex ).getAbsolutePath();
-            /*
-            Bitmap photo;
-            if ( data == null ) {
-
-
-
-                photo = loadBitmap(photoPath);
-
-                //BitmapFactory.Options options = new BitmapFactory.Options();
-                //options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-                //photo = BitmapFactory.decodeFile(mCurrentPhotoPath, options);
-
-            } else {
-                photo = (Bitmap) data.getExtras().get("data");
-            }
-            */
-
 
             // Save Bitmap into file system.
             //String filePath = mCurrentPhotoPath;//(String)data.getExtras().get("data");  //savePicture(photo);
-            Toast.makeText(this, "FilePath=" + photoPath, Toast.LENGTH_LONG).show();
-
-            putPictureFilePath(_currentImageIndex, photoPath);
+            //Toast.makeText(this, "FilePath=" + photoPath, Toast.LENGTH_LONG).show();
             generateThumbnail(uuid, _currentImageIndex);
-            //_makeFormFragment.setPictureFilePath(_currentImageIndex, photoPath);
+            pushPictureAndThumbnail(_currentImageIndex);
             _makeFormFragment.reloadEventThumbnail(uuid, _currentImageIndex);
-            //_currentImageView.setImageBitmap(photo);
 
         } else if (requestCode == GALLERY_RESULT && resultCode == RESULT_OK && null != data) {
             Uri selectedImage = data.getData();
@@ -479,7 +452,6 @@ public class MakeFormActivity extends FragmentActivity
             // Copy external picture into application directory.
             UUID uuid = UUID.fromString(_contentValues.getAsString(FormConstants.UUID));
             String dstPath = FileSystemHelper.getEventPicture(this, uuid, _currentImageIndex).getAbsolutePath();     //genPictureFilePath(_currentImageIndex);
-            putPictureFilePath(_currentImageIndex, dstPath);
 
             try {
                 copy(new File(picturePath), new File(dstPath));
@@ -488,24 +460,39 @@ public class MakeFormActivity extends FragmentActivity
             }
 
             _makeFormFragment.reloadEventThumbnail(uuid, _currentImageIndex);
-           // _makeFormFragment.setPictureFilePath(_currentImageIndex, dstPath);
         }
     }
 
-    private void putPictureFilePath(int photoIndex, String filePath) {
-        switch ( photoIndex ) {
-            case 0:
-                _formFields.putString(FormConstants.PIC_URI_1, filePath);
-                break;
-            case 1:
-                _formFields.putString(FormConstants.PIC_URI_2, filePath);
-                break;
-            case 2:
-                _formFields.putString(FormConstants.PIC_URI_3, filePath);
-                break;
+    private void pushPictureAndThumbnail(int index) {
+
+        String[] pictureKeys = new String[] {
+            FormConstants.PIC_URI_1,
+            FormConstants.PIC_URI_2,
+            FormConstants.PIC_URI_3
+        };
+
+        String[] thumbnailKeys = new String[] {
+                FormConstants.THUMBNAIL_URI_0,
+                FormConstants.THUMBNAIL_URI_2,
+                FormConstants.THUMBNAIL_URI_3
+        };
+
+
+        UUID uuid = UUID.fromString(_contentValues.getAsString(FormConstants.UUID));
+        File file = FileSystemHelper.getEventPicture(this, uuid, index);
+        if (file.exists()) {
+            _contentValues.put(pictureKeys[index], file.getAbsolutePath());
+        } else {
+            _contentValues.put(pictureKeys[index], "");
+        }
+
+        file = FileSystemHelper.getEventThumbnail(this, uuid, index);
+        if (file.exists()) {
+            _contentValues.put(thumbnailKeys[index], file.getAbsolutePath());
+        } else {
+            _contentValues.put(thumbnailKeys[index], "");
         }
     }
-
 
     private class PickDate implements DatePickerDialog.OnDateSetListener {
 
@@ -525,31 +512,6 @@ public class MakeFormActivity extends FragmentActivity
 
         }
     }
-
-/*
-    private class Adapter implements SpinnerAdapter {
-        @Override
-        public long getItemId(int i) {
-            return i;
-        }
-
-        public void unregisterDataSetObserver (DataSetObserver observer) {
-
-        }
-
-        public void registerDataSetObserver (DataSetObserver observer) {
-
-        }
-
-        public boolean isEmpty () {
-            return false;
-        }
-
-        public int getCount () {
-            return 0;
-        }
-    }
-*/
 
 
 

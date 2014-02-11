@@ -62,16 +62,14 @@ public class MainActivity extends ActionBarActivity
             Cursor cursor = _database.rawQuery("select * from " + FormConstants.TABLE_NAME, null);
             Log.i(TAG, "QUERY OK :" + cursor.getCount());
 
-            if ( cursor.getCount() > 0 ) {
-                getSupportFragmentManager().beginTransaction()
-                        .add(R.id.container, _itemListFragment)
-                        .commit();
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.container, _itemListFragment)
+                    .commit();
 
-            } else {
+            if ( cursor.getCount() == 0 ) {
                 getSupportFragmentManager().beginTransaction()
-                        .add(R.id.container, new PlaceholderFragment())
+                        .replace(R.id.container, new PlaceholderFragment())
                         .commit();
-
             }
 
         } else {
@@ -89,8 +87,6 @@ public class MainActivity extends ActionBarActivity
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.container, _itemListFragment)
                         .commitAllowingStateLoss();
-
-                //_itemListFragment.refresh();
 
             } else {
                 getSupportFragmentManager().beginTransaction()
@@ -279,27 +275,8 @@ public class MainActivity extends ActionBarActivity
         return false;
     }
 
-
-    private boolean insertOrUpdateToDatabase(Bundle bundle) {
-
-        ContentValues contentValues = new ContentValues();
-        contentValues.put(FormConstants.STATE, bundle.getInt(FormConstants.STATE, 0));
-        contentValues.put(FormConstants.PIC_URI_1, bundle.getString(FormConstants.PIC_URI_1));
-        contentValues.put(FormConstants.PIC_URI_2, bundle.getString(FormConstants.PIC_URI_2));
-        contentValues.put(FormConstants.PIC_URI_3, bundle.getString(FormConstants.PIC_URI_2));
-        contentValues.put(FormConstants.DATE, bundle.getString(FormConstants.DATE));
-        contentValues.put(FormConstants.TIME, bundle.getString(FormConstants.TIME));
-        contentValues.put(FormConstants.REASON, bundle.getString(FormConstants.REASON));
-        contentValues.put(FormConstants.VEHICLE_LICENSE, bundle.getString(FormConstants.VEHICLE_LICENSE));
-        //DatabaseHelper databaseHelper = new DatabaseHelper(this);
-        //SQLiteDatabase database = databaseHelper.getWritableDatabase();
-
-        long row = _database.insert(FormConstants.TABLE_NAME, null, contentValues);
-
-        Toast.makeText(this, "ROW = " + row, Toast.LENGTH_SHORT).show();
-        refreshContent();
-
-        return true;
+    private void insertOrUpdateToDatabase(ContentValues contentValues) {
+        _database.insert(FormConstants.TABLE_NAME, null, contentValues);
     }
 
     @Override
@@ -309,11 +286,14 @@ public class MainActivity extends ActionBarActivity
             if ( resultCode == RESULT_OK ) {
 
                 ContentValues contentValues = data.getParcelableExtra(FormConstants.CONTENT_VALUE);
-
-                insertOrUpdateToDatabase(data.getExtras());
+                insertOrUpdateToDatabase(contentValues);
 
                 Cursor cursor = _database.rawQuery("select * from " + FormConstants.TABLE_NAME, null);
                 _itemListFragment.changeCursor(cursor);
+
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.container, _itemListFragment)
+                        .commitAllowingStateLoss ();
 
                 // start request for making form.
                 _progressDialog = new ProgressDialog(this);
@@ -368,7 +348,7 @@ public class MainActivity extends ActionBarActivity
         int index;
         for (index = 0;index < 3;index++) {
 
-            File file = FileSystemHelper.getEventPicture(this, uuid, 0);
+            File file = FileSystemHelper.getEventPicture(this, uuid, index);
             if (file.exists()) {
                 Uri uri = Uri.fromFile(file);
                 uris.add(uri);

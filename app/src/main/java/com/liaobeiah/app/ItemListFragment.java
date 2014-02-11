@@ -85,16 +85,13 @@ public class ItemListFragment extends ListFragment {
 
         Log.i(TAG, "refresh");
 
-
-        Activity activity = getActivity();
-
         DatabaseHelper databaseHelper = new DatabaseHelper(getActivity());
         _database = databaseHelper.getReadableDatabase();
         if (_database.isOpen()) {
             Cursor cursor = _database.rawQuery("select * from " + FormConstants.TABLE_NAME, null);
 
 
-            String[] from = new String[]{ FormConstants.PIC_URI_1, FormConstants.VEHICLE_LICENSE,
+            String[] from = new String[]{ FormConstants.THUMBNAIL_URI_0, FormConstants.VEHICLE_LICENSE,
                     FormConstants.REASON, FormConstants.DATE };
 
             int[] to = new int[]{ R.id.imageViewPic, R.id.textViewLicense, R.id.textViewReason,
@@ -213,3 +210,26 @@ public class ItemListFragment extends ListFragment {
         mActivatedPosition = position;
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
