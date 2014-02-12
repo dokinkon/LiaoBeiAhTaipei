@@ -125,7 +125,7 @@ public class ItemListFragment extends ListFragment {
             setActivatedPosition(savedInstanceState.getInt(STATE_ACTIVATED_POSITION));
         }
 
-        refresh();
+        //refresh();
 
 
 
@@ -144,6 +144,11 @@ public class ItemListFragment extends ListFragment {
     }
 
     public void changeCursor(Cursor cursor) {
+        if ( _adapter == null ) {
+
+        }
+
+
         _adapter.changeCursor(cursor);
     }
 

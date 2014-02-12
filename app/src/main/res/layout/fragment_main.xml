@@ -1,25 +1,39 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    tools:context="com.liaobeiah.app.MainActivity$PlaceholderFragment"
-    android:background="#0099cc">
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
 
-    <TextView
-        android:text="@string/hello_world"
+    <RelativeLayout
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center"
-        android:id="@+id/textViewWelcom"
-        android:onClick="onClick"
-        android:clickable="true"
-        android:textSize="40sp"
-        android:textStyle="bold"
-        android:textColor="#33b5e5"
-        android:background="#0099cc" />
+        android:id="@+id/main_relative_layout"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        android:paddingBottom="@dimen/activity_vertical_margin"
+        tools:context="com.liaobeiah.app.MainActivity$PlaceholderFragment"
+        android:background="#0099cc">
 
-</RelativeLayout>
+        <TextView
+            android:text="@string/hello_world"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:id="@+id/textViewWelcom"
+            android:onClick="onClick"
+            android:clickable="true"
+            android:textSize="40sp"
+            android:textStyle="bold"
+            android:textColor="#33b5e5"
+            android:background="#0099cc" />
+
+
+
+    </RelativeLayout>
+
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/main_list_view" />
+
+</FrameLayout>

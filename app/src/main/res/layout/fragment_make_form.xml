@@ -1,3 +1,10 @@
+<LinearLayout
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+
 <ScrollView
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
@@ -16,7 +23,7 @@
 
 
         <TextView
-            style="@android:style/TextAppearance.Large"
+            style="@android:style/TextAppearance.Holo.Small"
             tools:context="com.liaobeiah.app.MakeFormFragment"
             xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:tools="http://schemas.android.com/tools"
@@ -26,7 +33,7 @@
             android:textIsSelectable="true"
             android:text="@string/evidence_picture"
             android:paddingBottom="1dp"
-            android:paddingLeft="16dp"
+            android:paddingLeft="10dp"
             android:textStyle="bold"
             android:paddingTop="16dp" />
 
@@ -43,9 +50,12 @@
             android:orientation="horizontal"
             android:layout_width="fill_parent"
             android:layout_height="128dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginLeft="5dp"
-            android:layout_marginRight="5dp">
+            android:layout_marginTop="0dp"
+            android:layout_marginLeft="0dp"
+            android:layout_marginRight="0dp"
+            android:paddingLeft="8dp"
+            android:layout_margin="0dp"
+            android:paddingRight="8dp">
 
             <FrameLayout
                 android:layout_width="fill_parent"
@@ -128,7 +138,7 @@
         </LinearLayout>
 
         <TextView
-            style="?android:attr/textAppearanceLarge"
+            style="@android:style/TextAppearance.Holo.Small"
             tools:context="com.liaobeiah.app.MakeFormFragment"
             xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:tools="http://schemas.android.com/tools"
@@ -137,7 +147,7 @@
             android:layout_height="wrap_content"
             android:textIsSelectable="true"
             android:text="@string/date"
-            android:paddingLeft="16dp"
+            android:paddingLeft="10dp"
             android:paddingTop="16dp"
             android:textStyle="bold" />
 
@@ -152,24 +162,23 @@
 
 
         <TextView
-            style="?android:attr/textAppearanceLarge"
+            style="@android:style/TextAppearance.Holo.Medium"
             tools:context="com.liaobeiah.app.MakeFormFragment"
             xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:tools="http://schemas.android.com/tools"
             android:id="@+id/textViewDate"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="16dp"
+            android:padding="10dp"
             android:textIsSelectable="false"
             android:text="2014年1月26日"
             android:textAlignment="gravity"
             android:layout_gravity="center"
-            android:gravity="center"
             android:onClick="onDateViewClicked"
             android:clickable="true" />
 
         <TextView
-            style="?android:attr/textAppearanceLarge"
+            style="@android:style/TextAppearance.Holo.Small"
             tools:context="com.liaobeiah.app.MakeFormFragment"
             xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:tools="http://schemas.android.com/tools"
@@ -178,7 +187,7 @@
             android:layout_height="wrap_content"
             android:textIsSelectable="true"
             android:text="@string/time"
-            android:paddingLeft="16dp"
+            android:paddingLeft="10dp"
             android:paddingTop="16dp"
             android:textStyle="bold" />
 
@@ -192,22 +201,21 @@
             android:layout_marginRight="10dp" />
 
         <TextView
-            style="?android:attr/textAppearanceLarge"
+            style="@android:style/TextAppearance.Holo.Medium"
             tools:context="com.liaobeiah.app.MakeFormFragment"
             xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:tools="http://schemas.android.com/tools"
             android:id="@+id/textViewTime"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="16dp"
+            android:padding="10dp"
             android:textIsSelectable="true"
             android:text="時間"
             android:clickable="true"
-            android:gravity="center"
             android:onClick="onTimeViewClicked" />
 
         <TextView
-            style="?android:attr/textAppearanceLarge"
+            style="@android:style/TextAppearance.Holo.Small"
             tools:context="com.liaobeiah.app.MakeFormFragment"
             xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:tools="http://schemas.android.com/tools"
@@ -216,7 +224,7 @@
             android:layout_height="wrap_content"
             android:textIsSelectable="true"
             android:text="違規車牌"
-            android:paddingLeft="16dp"
+            android:paddingLeft="10dp"
             android:paddingTop="16dp"
             android:textStyle="bold" />
 
@@ -224,8 +232,8 @@
             android:layout_width="fill_parent"
             android:layout_height="1dp"
             android:background="@android:color/darker_gray"
-            android:paddingLeft="5dp"
-            android:paddingRight="2dp"
+            android:paddingLeft="0dp"
+            android:paddingRight="0dp"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp" />
 
@@ -235,10 +243,13 @@
             android:inputType="text|textCapCharacters"
             android:ems="10"
             android:id="@+id/editTextVehicleLicense"
-            android:hint="請輸入車牌" />
+            android:hint="請輸入車牌"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:lines="1" />
 
         <TextView
-            style="?android:attr/textAppearanceLarge"
+            style="@android:style/TextAppearance.Holo.Small"
             tools:context="com.liaobeiah.app.MakeFormFragment"
             xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:tools="http://schemas.android.com/tools"
@@ -248,26 +259,26 @@
             android:textIsSelectable="true"
             android:text="地點"
             android:textStyle="bold"
-            android:paddingLeft="16dp"
+            android:paddingLeft="10dp"
             android:paddingTop="16dp" />
 
         <View
-            android:layout_width="fill_parent"
+            android:layout_width="match_parent"
             android:layout_height="1dp"
             android:background="@android:color/darker_gray"
-            android:paddingLeft="5dp"
-            android:paddingRight="2dp"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp" />
+            android:layout_marginRight="10dp"
+            android:layout_marginLeft="10dp" />
 
         <EditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/editTextLocation"
-            android:hint="請輸入違規地點" />
+            android:hint="請輸入違規地點"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp" />
 
         <TextView
-            style="?android:attr/textAppearanceLarge"
+            style="@android:style/TextAppearance.Holo.Small"
             tools:context="com.liaobeiah.app.MakeFormFragment"
             xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:tools="http://schemas.android.com/tools"
@@ -277,7 +288,7 @@
             android:textIsSelectable="true"
             android:text="違規原因"
             android:layout_gravity="center"
-            android:paddingLeft="16dp"
+            android:paddingLeft="10dp"
             android:paddingTop="16dp"
             android:textStyle="bold" />
 
@@ -293,10 +304,12 @@
         <Spinner
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/spinner_reason" />
+            android:id="@+id/spinner_reason"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp" />
 
         <TextView
-            style="?android:attr/textAppearanceLarge"
+            style="@android:style/TextAppearance.Holo.Small"
             tools:context="com.liaobeiah.app.MakeFormFragment"
             xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:tools="http://schemas.android.com/tools"
@@ -308,7 +321,7 @@
             android:layout_gravity="center"
             android:textStyle="bold"
             android:paddingTop="16dp"
-            android:paddingLeft="16dp" />
+            android:paddingLeft="10dp" />
         <View
             android:layout_width="fill_parent"
             android:layout_height="1dp"
@@ -324,10 +337,12 @@
             android:inputType="textMultiLine"
             android:ems="10"
             android:id="@+id/editText3"
-            android:hint="請輸入補充說明" />
+            android:hint="請輸入補充說明"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp" />
 
         <TextView
-            style="?android:attr/textAppearanceLarge"
+            style="@android:style/TextAppearance.Holo.Small"
             tools:context="com.liaobeiah.app.MakeFormFragment"
             xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:tools="http://schemas.android.com/tools"
@@ -338,7 +353,7 @@
             android:text="遞交單位"
             android:layout_gravity="center"
             android:paddingTop="16dp"
-            android:paddingLeft="16dp"
+            android:paddingLeft="10dp"
             android:textStyle="bold" />
 
         <View
@@ -353,45 +368,19 @@
         <Spinner
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/spinner_receiver" />
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent">
-
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/cancel"
-                android:id="@+id/button"
-                android:layout_weight="1"
-                android:onClick="onCancelButtonClicked" />
-
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/submit"
-                android:id="@+id/button2"
-                android:layout_weight="1"
-                android:onClick="onSubmitButtonClicked" />
-        </LinearLayout>
+            android:id="@+id/spinner_receiver"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp" />
 
 
     </LinearLayout>
 
+    </ScrollView>
 
+    <RelativeLayout
+        android:id="@+id/adLayout"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" >
+    </RelativeLayout>
 
-
-
-
-
-
-
-
-
-
-
-
-
-</ScrollView>
+</LinearLayout>

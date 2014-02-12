@@ -20,8 +20,9 @@ import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.support.v4.app.FragmentActivity;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.DatePicker;
@@ -51,7 +52,7 @@ import java.util.UUID;
  * This activity is mostly just a 'shell' activity containing nothing
  * more than a {@link MakeFormFragment}.
  */
-public class MakeFormActivity extends FragmentActivity
+public class MakeFormActivity extends ActionBarActivity
         implements LocationListener{
 
     private static int CAMERA_RESULT = 25;
@@ -88,14 +89,6 @@ public class MakeFormActivity extends FragmentActivity
 
         // Show the Up button in the action bar.
         getActionBar().setDisplayHomeAsUpEnabled(true);
-
-
-
-
-
-
-
-
 
         // savedInstanceState is non-null when there is fragment state
         // saved from previous configurations of this activity
@@ -151,6 +144,14 @@ public class MakeFormActivity extends FragmentActivity
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.edit_form_menu, menu);
+        return true;
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == android.R.id.home) {
@@ -165,6 +166,8 @@ public class MakeFormActivity extends FragmentActivity
 
             //NavUtils.navigateUpTo(this, new Intent(this, ItemListActivity.class));
             return true;
+        } else if ( id == R.id.action_submit) {
+            submit();
         }
         return super.onOptionsItemSelected(item);
     }
@@ -331,7 +334,7 @@ public class MakeFormActivity extends FragmentActivity
     }
 
 
-    public void onSubmitButtonClicked(View view) {
+    private void submit() {
 
         Log.i(TAG, "onSubmitButtonClicked");
         if (!validateFields()) {
@@ -466,15 +469,15 @@ public class MakeFormActivity extends FragmentActivity
     private void pushPictureAndThumbnail(int index) {
 
         String[] pictureKeys = new String[] {
+            FormConstants.PIC_URI_0,
             FormConstants.PIC_URI_1,
-            FormConstants.PIC_URI_2,
-            FormConstants.PIC_URI_3
+            FormConstants.PIC_URI_2
         };
 
         String[] thumbnailKeys = new String[] {
                 FormConstants.THUMBNAIL_URI_0,
-                FormConstants.THUMBNAIL_URI_2,
-                FormConstants.THUMBNAIL_URI_3
+                FormConstants.THUMBNAIL_URI_1,
+                FormConstants.THUMBNAIL_URI_2
         };
 
 

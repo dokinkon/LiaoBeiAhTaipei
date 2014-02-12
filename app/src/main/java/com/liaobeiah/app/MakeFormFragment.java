@@ -2,10 +2,12 @@ package com.liaobeiah.app;
 
 import android.app.Activity;
 import android.content.ContentValues;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,6 +17,8 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
+
+import com.vpon.ads.VponBanner;
 
 import java.io.File;
 import java.util.Calendar;
@@ -36,12 +40,6 @@ public class MakeFormFragment extends Fragment {
 
     private static final String TAG = "MakeFormFragment";
 
-    /**
-     * The dummy content this fragment is presenting.
-     */
-    // TODO remove this field.
-    //private DummyContent.DummyItem mItem;
-
 
     private ImageView[] _imageViews;
     private TextView _dateView;
@@ -50,12 +48,15 @@ public class MakeFormFragment extends Fragment {
     private EditText _locationView;
     private String[] _pictureFilePaths;
 
+    private VponBanner vponBanner = null;
+
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
      */
     public MakeFormFragment() {
+
     }
 
     @Override
@@ -118,7 +119,37 @@ public class MakeFormFragment extends Fragment {
         spinner = (Spinner)rootView.findViewById(R.id.spinner_receiver);
         spinner.setAdapter(adapter2);
 
+
+        /*
+        RelativeLayout adBannerLayout = (RelativeLayout) rootView.findViewById(R.id.adLayout);
+        VponBanner vponBanner = new VponBanner(getActivity(), "8a80818243dca272014423f2acd83c6d", VponAdSize.SMART_BANNER, VponPlatform.TW);
+        VponAdRequest adRequest = new VponAdRequest();
+
+        HashSet<String> testDeviceImeiSet = new HashSet<String>();
+        testDeviceImeiSet.add(MakeFormFragment.getImei(getActivity())); //填入你那台手機的imei
+        adRequest.setTestDevices(testDeviceImeiSet);
+        //設定可以auto refresh去要banner
+        adRequest.setEnableAutoRefresh(true);
+        //開始取得banner
+        vponBanner.loadAd(adRequest);
+        adBannerLayout.addView(vponBanner);
+*/
         return rootView;
+    }
+
+    public static String getImei(Context context) {
+
+        try
+        {
+            TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+            String imei = telephonyManager.getDeviceId();
+            return imei;
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     @Override
@@ -137,7 +168,7 @@ public class MakeFormFragment extends Fragment {
         super.onSaveInstanceState(outState);
         Log.i(TAG, "onSaveInstanceState");
 
-        outState.putString(FormConstants.PIC_URI_1, _pictureFilePaths[0]);
+        //outState.putString(FormConstants.PIC_URI_1, _pictureFilePaths[0]);
         //outState.putString(FormConstants.PIC_URI_1, _pictureFilePaths[2]);
         //outState.putString(FormConstants.PIC_URI_1, _pictureFilePaths[0]);
 
@@ -164,6 +195,16 @@ public class MakeFormFragment extends Fragment {
 
 
 
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (vponBanner != null) {
+            //離開時 "千萬"記得要呼叫vponBanner的 destroy
+            vponBanner.destroy();
+            vponBanner = null;
+        }
     }
 
 }

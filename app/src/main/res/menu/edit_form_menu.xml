@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:yourapp="http://schemas.android.com/apk/res-auto">
+    <item android:id="@+id/action_submit"
+        android:title="@string/submit"
+        android:icon="@drawable/ic_action_send"
+        yourapp:showAsAction="always|withText"/>
+    <item android:id="@+id/action_settings"
+        android:title="設定" />
+    <item android:id="@+id/action_howto"
+        android:title="說明" />
+    <item android:id="@+id/action_about"
+        android:title="關於" />
+</menu>

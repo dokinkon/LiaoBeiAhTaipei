@@ -3,6 +3,7 @@ package com.liaobeiah.app;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -10,7 +11,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBarActivity;
@@ -39,18 +39,24 @@ public class MainActivity extends ActionBarActivity
     private ItemListFragment _itemListFragment;
     private PlaceholderFragment _placeHolderFragment;
     private ProgressDialog _progressDialog;
+    private Context _thisContext;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.i(TAG, "onCreate");
+        _thisContext = this;
         setContentView(R.layout.activity_main);
 
 
         if (savedInstanceState == null) {
-
+            // TEST MainFragment
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.container, new MainFragment())
+                    .commit();
 
         }
+
 
 
         _databaseHelper = new DatabaseHelper(this);
@@ -58,6 +64,7 @@ public class MainActivity extends ActionBarActivity
         _itemListFragment = new ItemListFragment();
         _placeHolderFragment = new PlaceholderFragment();
 
+        /*
         if (_database.isOpen()) {
             Cursor cursor = _database.rawQuery("select * from " + FormConstants.TABLE_NAME, null);
             Log.i(TAG, "QUERY OK :" + cursor.getCount());
@@ -74,8 +81,14 @@ public class MainActivity extends ActionBarActivity
 
         } else {
             Log.e(TAG, "Database not open!");
-        }
+        }*/
 
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.i(TAG, "onStart");
     }
 
     private void refreshContent() {
@@ -140,6 +153,12 @@ public class MainActivity extends ActionBarActivity
 
                     cursor.moveToFirst();
 
+                    int columnIndex = cursor.getColumnIndex(FormConstants.UUID);
+                    UUID uuid = UUID.fromString(cursor.getString(columnIndex));
+                    FileSystemHelper.deleteEvent(_thisContext, uuid);
+
+
+                    /*
                     String[] picFields = new String[3];
                     picFields[0] = FormConstants.PIC_URI_1;
                     picFields[1] = FormConstants.PIC_URI_2;
@@ -156,6 +175,7 @@ public class MainActivity extends ActionBarActivity
                             }
                         }
                     }
+                    */
 
                     _database.delete(FormConstants.TABLE_NAME, FormConstants._ID + " = " + _rowId, null);
                     refreshContent();
@@ -222,7 +242,7 @@ public class MainActivity extends ActionBarActivity
             return true;
         } else if (id == R.id.action_remove_database) {
             if (deleteDatabase("com.liaobeiah.form") ) {
-                clearPictureFolder();
+                FileSystemHelper.deleteAllEvents(this);
                 Toast.makeText(this, "移除資料庫成功", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(this, "移除資料庫失敗", Toast.LENGTH_SHORT).show();
@@ -231,16 +251,6 @@ public class MainActivity extends ActionBarActivity
             return true;
         } else {
             return super.onOptionsItemSelected(item);
-        }
-    }
-
-
-    private void clearPictureFolder() {
-
-        File picDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        File[] files = picDir.listFiles();
-        for (File file : files) {
-            file.delete();
         }
     }
 
@@ -256,24 +266,7 @@ public class MainActivity extends ActionBarActivity
         }
     }
 
-    /* Checks if external storage is available for read and write */
-    public boolean isExternalStorageWritable() {
-        String state = Environment.getExternalStorageState();
-        if (Environment.MEDIA_MOUNTED.equals(state)) {
-            return true;
-        }
-        return false;
-    }
 
-    /* Checks if external storage is available to at least read */
-    public boolean isExternalStorageReadable() {
-        String state = Environment.getExternalStorageState();
-        if (Environment.MEDIA_MOUNTED.equals(state) ||
-                Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
-            return true;
-        }
-        return false;
-    }
 
     private void insertOrUpdateToDatabase(ContentValues contentValues) {
         _database.insert(FormConstants.TABLE_NAME, null, contentValues);
@@ -289,7 +282,7 @@ public class MainActivity extends ActionBarActivity
                 insertOrUpdateToDatabase(contentValues);
 
                 Cursor cursor = _database.rawQuery("select * from " + FormConstants.TABLE_NAME, null);
-                _itemListFragment.changeCursor(cursor);
+                //_itemListFragment.changeCursor(cursor);
 
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.container, _itemListFragment)
@@ -297,7 +290,7 @@ public class MainActivity extends ActionBarActivity
 
                 // start request for making form.
                 _progressDialog = new ProgressDialog(this);
-                _progressDialog.setMessage("Please Wait");
+                _progressDialog.setMessage("產生檢舉表單中...");
                 _progressDialog.show();
                 new RequestFormTask(this, contentValues, this).execute();
             } else {
@@ -322,7 +315,6 @@ public class MainActivity extends ActionBarActivity
             return rootView;
         }
     }
-
 
     private void submit( ContentValues contentValues ) {
 

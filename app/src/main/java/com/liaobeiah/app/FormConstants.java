@@ -14,12 +14,12 @@ public interface FormConstants extends BaseColumns {
     public static final String TIME = "time";
     public static final String LOCATION = "location";
     public static final String VEHICLE_LICENSE = "vehicle_license";
+    public static final String PIC_URI_0 = "pic_uri_0";
     public static final String PIC_URI_1 = "pic_uri_1";
     public static final String PIC_URI_2 = "pic_uri_2";
-    public static final String PIC_URI_3 = "pic_uri_3";
-    public static final String THUMBNAIL_URI_0 = "thumbnail_uri_1";
+    public static final String THUMBNAIL_URI_0 = "thumbnail_uri_0";
+    public static final String THUMBNAIL_URI_1 = "thumbnail_uri_1";
     public static final String THUMBNAIL_URI_2 = "thumbnail_uri_2";
-    public static final String THUMBNAIL_URI_3 = "thumbnail_uri_3";
     public static final String UUID = "uuid";
     public static final String REASON = "reason";
     public static final String COMMENT = "comment";
