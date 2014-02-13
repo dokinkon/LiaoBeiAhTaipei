@@ -21,10 +21,14 @@
         <item>新北市警察局長信箱</item>
     </array>
 
-    <array name="form_item_options">
+    <array name="finish_item_options">
         <item>檢視</item>
         <item>刪除</item>
     </array>
 
+    <array name="draft_item_options">
+        <item>編輯</item>
+        <item>刪除</item>
+    </array>
 
 </resources>

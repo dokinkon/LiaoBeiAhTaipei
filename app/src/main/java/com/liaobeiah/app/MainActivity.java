@@ -3,7 +3,6 @@ package com.liaobeiah.app;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -12,14 +11,11 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Toast;
 
@@ -28,89 +24,33 @@ import java.util.ArrayList;
 import java.util.UUID;
 
 public class MainActivity extends ActionBarActivity
-        implements ItemListFragment.Callbacks, RequestFormTask.Listener {
-
+        implements MainFragment.Callbacks, RequestFormTask.Listener {
 
     private static int REQUEST_MAKE_FORM = 23;
+    private static int DIALOG_DELETE_FORM_CONFIRM = 44;
     private static String TAG = "MainActivity";
-
-    private DatabaseHelper _databaseHelper;
-    private SQLiteDatabase _database;
-    private ItemListFragment _itemListFragment;
-    private PlaceholderFragment _placeHolderFragment;
+    private static String TAG_MAIN_FRAGMENT = "MainFragment";
     private ProgressDialog _progressDialog;
-    private Context _thisContext;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.i(TAG, "onCreate");
-        _thisContext = this;
         setContentView(R.layout.activity_main);
 
 
         if (savedInstanceState == null) {
-            // TEST MainFragment
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.container, new MainFragment())
+                    .add(R.id.container, new MainFragment(), TAG_MAIN_FRAGMENT)
                     .commit();
 
         }
-
-
-
-        _databaseHelper = new DatabaseHelper(this);
-        _database = _databaseHelper.getWritableDatabase();
-        _itemListFragment = new ItemListFragment();
-        _placeHolderFragment = new PlaceholderFragment();
-
-        /*
-        if (_database.isOpen()) {
-            Cursor cursor = _database.rawQuery("select * from " + FormConstants.TABLE_NAME, null);
-            Log.i(TAG, "QUERY OK :" + cursor.getCount());
-
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, _itemListFragment)
-                    .commit();
-
-            if ( cursor.getCount() == 0 ) {
-                getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.container, new PlaceholderFragment())
-                        .commit();
-            }
-
-        } else {
-            Log.e(TAG, "Database not open!");
-        }*/
-
     }
 
     @Override
     protected void onStart() {
         super.onStart();
         Log.i(TAG, "onStart");
-    }
-
-    private void refreshContent() {
-        if (_database.isOpen()) {
-            Cursor cursor = _database.rawQuery("select * from " + FormConstants.TABLE_NAME, null);
-            Log.i(TAG, "QUERY OK :" + cursor.getCount());
-
-            if ( cursor.getCount() > 0 ) {
-                getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.container, _itemListFragment)
-                        .commitAllowingStateLoss();
-
-            } else {
-                getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.container, _placeHolderFragment)
-                        .commitAllowingStateLoss();
-
-            }
-
-        } else {
-            Log.e(TAG, "Database not open!");
-        }
     }
 
     @Override
@@ -130,72 +70,54 @@ public class MainActivity extends ActionBarActivity
     }
 
     class ItemOperationListener implements DialogInterface.OnClickListener {
-        //private DatabaseHelper _databaseHelper;
+
         private long _rowId;
 
-
-        ItemOperationListener(DatabaseHelper databaseHelper, long rowId) {
-            //_databaseHelper = databaseHelper;
+        ItemOperationListener(long rowId) {
             _rowId = rowId;
         }
 
         public void onClick(DialogInterface dialog, int which) {
             if ( which == 0) {
+                viewOfEditForm(_rowId);
 
             } else if (which == 1) {
-                // try to remove item from database...
-                //SQLiteDatabase database = _databaseHelper.getWritableDatabase();
-                if ( _database.isOpen()) {
-
-                    // delete reference pictures
-                    Cursor cursor = _database.rawQuery("select * from " + FormConstants.TABLE_NAME + " where "
-                            + FormConstants._ID + " = " + _rowId, null);
-
-                    cursor.moveToFirst();
-
-                    int columnIndex = cursor.getColumnIndex(FormConstants.UUID);
-                    UUID uuid = UUID.fromString(cursor.getString(columnIndex));
-                    FileSystemHelper.deleteEvent(_thisContext, uuid);
-
-
-                    /*
-                    String[] picFields = new String[3];
-                    picFields[0] = FormConstants.PIC_URI_1;
-                    picFields[1] = FormConstants.PIC_URI_2;
-                    picFields[2] = FormConstants.PIC_URI_3;
-
-                    int i = 0;
-                    for (i=0;i<3;i++) {
-                        int index = cursor.getColumnIndex(picFields[i]);
-                        String filePath = cursor.getString(index);
-                        if (filePath != null) {
-                            File file = new File(filePath);
-                            if (file.exists()) {
-                                file.delete();
-                            }
-                        }
-                    }
-                    */
-
-                    _database.delete(FormConstants.TABLE_NAME, FormConstants._ID + " = " + _rowId, null);
-                    refreshContent();
-
-                } else {
-                    Log.e(TAG, "Failed to open databse!");
-
-                }
+                //showDialog(DIALOG_DELETE_FORM_CONFIRM);
+                MainFragment fragment = (MainFragment)getSupportFragmentManager().findFragmentByTag(TAG_MAIN_FRAGMENT);
+                fragment.deleteForm(_rowId);
             }
         }
     }
 
     @Override
+    public void onItemClicked(AdapterView<?> parent, View view, int position, long id) {
+
+        DatabaseHelper helper = new DatabaseHelper(this);
+        SQLiteDatabase database = helper.getReadableDatabase();
+        Cursor cursor = database.rawQuery("select * from " + FormConstants.TABLE_NAME + " where "
+                + FormConstants._ID + " = " + id, null);
+
+        cursor.moveToFirst();
+
+        int columnIndex = cursor.getColumnIndex(FormConstants.STATE);
+        int state = cursor.getInt(columnIndex);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        if (state == FormConstants.STATE_FINISH) {
+            builder.setItems(R.array.finish_item_options, new ItemOperationListener(id));
+        } else {
+            builder.setItems(R.array.draft_item_options, new ItemOperationListener(id));
+        }
+
+
+
+
+        builder.show();
+    }
+
+    @Override
     public void onItemLongClick(AdapterView<?> arg0, View arg1, int pos, long id) {
 
-        //Toast.makeText(this, "POS:" + pos + " id:" + id, Toast.LENGTH_SHORT).show();
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setItems(R.array.form_item_options, new ItemOperationListener(_databaseHelper, id));
-        builder.show();
     }
 
     @Override
@@ -242,12 +164,14 @@ public class MainActivity extends ActionBarActivity
             return true;
         } else if (id == R.id.action_remove_database) {
             if (deleteDatabase("com.liaobeiah.form") ) {
-                FileSystemHelper.deleteAllEvents(this);
+                MainFragment fragment = (MainFragment)getSupportFragmentManager().findFragmentByTag(TAG_MAIN_FRAGMENT);
+                fragment.deleteAllEvents();
+
+                //FileSystemHelper.deleteAllEvents(this);
                 Toast.makeText(this, "移除資料庫成功", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(this, "移除資料庫失敗", Toast.LENGTH_SHORT).show();
             }
-            refreshContent();
             return true;
         } else {
             return super.onOptionsItemSelected(item);
@@ -256,9 +180,17 @@ public class MainActivity extends ActionBarActivity
 
     private void addForm() {
         Intent detailIntent = new Intent(this, MakeFormActivity.class);
-        detailIntent.putExtra(MakeFormFragment.ARG_ITEM_ID, 0);
         startActivityForResult(detailIntent, REQUEST_MAKE_FORM);
     }
+
+    private void viewOfEditForm(long formId) {
+        Intent detailIntent = new Intent(this, MakeFormActivity.class);
+        detailIntent.putExtra("FormID", formId);
+        startActivityForResult(detailIntent, REQUEST_MAKE_FORM);
+
+    }
+
+
 
     public void onClick(View view) {
         if (view.getId() == R.id.textViewWelcom) {
@@ -266,53 +198,31 @@ public class MainActivity extends ActionBarActivity
         }
     }
 
-
-
-    private void insertOrUpdateToDatabase(ContentValues contentValues) {
-        _database.insert(FormConstants.TABLE_NAME, null, contentValues);
-    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
         if ( requestCode == REQUEST_MAKE_FORM) {
-            if ( resultCode == RESULT_OK ) {
+            if ( resultCode == MakeFormActivity.RESULT_SUBMIT ) {
 
                 ContentValues contentValues = data.getParcelableExtra(FormConstants.CONTENT_VALUE);
-                insertOrUpdateToDatabase(contentValues);
+                MainFragment fragment = (MainFragment)getSupportFragmentManager().findFragmentByTag(TAG_MAIN_FRAGMENT);
+                fragment.insertForm(contentValues);
 
-                Cursor cursor = _database.rawQuery("select * from " + FormConstants.TABLE_NAME, null);
-                //_itemListFragment.changeCursor(cursor);
-
-                getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.container, _itemListFragment)
-                        .commitAllowingStateLoss ();
 
                 // start request for making form.
                 _progressDialog = new ProgressDialog(this);
                 _progressDialog.setMessage("產生檢舉表單中...");
                 _progressDialog.show();
                 new RequestFormTask(this, contentValues, this).execute();
-            } else {
-                Toast.makeText(getBaseContext(), "你人真好!", Toast.LENGTH_LONG).show();
+            } else if ( resultCode == MakeFormActivity.RESULT_SAVE_DRAFT ) {
+                ContentValues contentValues = data.getParcelableExtra(FormConstants.CONTENT_VALUE);
+                MainFragment fragment = (MainFragment)getSupportFragmentManager().findFragmentByTag(TAG_MAIN_FRAGMENT);
+                fragment.insertForm(contentValues);
 
+            } else if ( resultCode == RESULT_CANCELED ) {
+                Toast.makeText(getBaseContext(), "你人真好!", Toast.LENGTH_SHORT).show();
             }
-        }
-    }
 
-    /**
-     * A placeholder fragment containing a simple view.
-     */
-    public static class PlaceholderFragment extends Fragment {
-
-        public PlaceholderFragment() {
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-            return rootView;
         }
     }
 
@@ -362,5 +272,32 @@ public class MainActivity extends ActionBarActivity
             Toast.makeText(MainActivity.this, "There are no email clients installed.", Toast.LENGTH_SHORT).show();
         }
     }
+
+    /*
+    @Override
+    protected Dialog onCreateDialog(int id, Bundle savedInstanced) {
+        if (id == DIALOG_DELETE_FORM_CONFIRM) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setMessage("確定刪除此筆資料？")
+                    .setPositiveButton("確定", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            dialog.dismiss();
+
+                        }
+                    })
+                    .setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+
+                            dialog.dismiss();
+
+                        }
+                    });
+
+            // Create the AlertDialog object and return it
+            return builder.create();
+        }
+        return super.onCreateDialog(id, savedInstanced);
+    }
+    */
 
 }

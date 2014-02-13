@@ -3,26 +3,37 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent" android:layout_height="wrap_content">
 
-    <ImageView
+    <FrameLayout
+        android:id="@+id/frame_layout"
         android:layout_width="64dp"
         android:layout_height="64dp"
-        android:id="@+id/imageViewPic"
-        android:cropToPadding="false"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="false"
-        android:layout_alignParentBottom="false"
-        android:layout_alignParentTop="true"
-        android:layout_centerVertical="true"
-        android:adjustViewBounds="false"
-        android:background="@android:color/darker_gray" />
+        android:layout_alignParentTop="true">
+
+        <ImageView
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:id="@+id/imageViewPic"
+            android:cropToPadding="false"
+            android:layout_centerVertical="true"
+            android:adjustViewBounds="false"
+            android:background="@android:color/darker_gray" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:id="@+id/textViewState"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:textColor="@color/green" />
+    </FrameLayout>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="W7-4657"
         android:id="@+id/textViewLicense"
-        android:layout_alignParentTop="true"
-        android:layout_toRightOf="@+id/imageViewPic"
+        android:layout_toRightOf="@id/frame_layout"
         android:layout_marginLeft="16dp"
         android:layout_marginTop="4dp" />
 
@@ -31,11 +42,9 @@
         android:layout_height="wrap_content"
         android:text="紅線違停"
         android:id="@+id/textViewReason"
-        android:layout_alignParentTop="false"
-        android:layout_alignStart="@+id/textViewLicense"
-        android:layout_marginBottom="4dp"
-        android:layout_alignParentBottom="false"
-        android:layout_alignBottom="@+id/imageViewPic" />
+        android:layout_alignLeft="@id/textViewLicense"
+        android:layout_alignBottom="@id/frame_layout"
+        android:layout_marginBottom="4dp" />
 
     <TextView
         android:layout_width="wrap_content"

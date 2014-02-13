@@ -1,5 +1,7 @@
 package com.liaobeiah.app;
 
+import android.annotation.TargetApi;
+import android.app.ActionBar;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
@@ -8,6 +10,8 @@ import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Address;
@@ -18,6 +22,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
@@ -28,7 +33,6 @@ import android.view.View;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.Spinner;
-import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
@@ -39,6 +43,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -55,13 +61,16 @@ import java.util.UUID;
 public class MakeFormActivity extends ActionBarActivity
         implements LocationListener{
 
+    public static final int RESULT_VIEW_ONLY = 77;
+    public static final int RESULT_SAVE_DRAFT = 78;
+    public static final int RESULT_SUBMIT = 79;
+
     private static int CAMERA_RESULT = 25;
     private static int GALLERY_RESULT = 26;
 
-    public static int FormStateDraft = 0;
-    public static int FormStateComplete = 1;
 
     private static int DIALOG_UNFINISHED_CONFIRM = 1;
+    private static int DIALOG_SUBMIT_CONFIRM = 2;
 
     private static String CONTENT_VALUES = "ContentValues";
 
@@ -109,10 +118,24 @@ public class MakeFormActivity extends ActionBarActivity
                     .add(R.id.item_detail_container, _makeFormFragment, MAKE_FORM_FRAGMENT_TAG)
                     .commit();
 
-            _contentValues = getIntent().getParcelableExtra(FormConstants.CONTENT_VALUE);
-            if (_contentValues == null) {
+
+            if (getIntent().hasExtra("FormID")) {
+                // User may edit/view form
+
+                long formId = getIntent().getLongExtra("FormID", 0);
+                DatabaseHelper helper = new DatabaseHelper(this);
+                SQLiteDatabase database = helper.getReadableDatabase();
+                Cursor cursor = database.rawQuery("select * from " + FormConstants.TABLE_NAME + " where "
+                        + FormConstants._ID + " = " + formId, null);
+
+                cursor.moveToFirst();
+                _contentValues = new ContentValues();
+                DatabaseUtils.cursorRowToContentValues(cursor, _contentValues);
+
+            } else {
                 _contentValues = new ContentValues();
                 _contentValues.put(FormConstants.UUID, UUID.randomUUID().toString());
+                _contentValues.put(FormConstants.STATE, FormConstants.STATE_DRAFT);
             }
 
         } else {
@@ -120,22 +143,36 @@ public class MakeFormActivity extends ActionBarActivity
             _contentValues = savedInstanceState.getParcelable(CONTENT_VALUES);
         }
 
-        restoreUIState();
-
+        actionBarSetup();
     }
 
-    private void restoreUIState() {
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+    private void actionBarSetup() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            ActionBar ab = getActionBar();
 
+            if (isDraftState()) {
+                ab.setTitle("編輯檢舉表單");
+            } else {
+                ab.setTitle("檢視[唯讀]");
+            }
+        }
+    }
 
+    private boolean isDraftState() {
+        return _contentValues.getAsInteger(FormConstants.STATE) == FormConstants.STATE_DRAFT;
+    }
 
-
-
-
+    protected void onStart() {
+        super.onStart();
+        _makeFormFragment.restoreUIState(_contentValues);
     }
 
     protected void onResume () {
         super.onResume();
-        _locationManager.requestSingleUpdate(new Criteria(), this, null);
+        if ( isDraftState() ) {
+            _locationManager.requestSingleUpdate(new Criteria(), this, null);
+        }
     }
 
     protected void onPause() {
@@ -145,10 +182,24 @@ public class MakeFormActivity extends ActionBarActivity
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        int state = _contentValues.getAsInteger(FormConstants.STATE);
+        if (state == FormConstants.STATE_DRAFT) {
+            getMenuInflater().inflate(R.menu.edit_form_menu, menu);
+        } else {
+            getMenuInflater().inflate(R.menu.view_form_menu, menu);
+        }
 
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.edit_form_menu, menu);
         return true;
+    }
+
+    private void leave() {
+        int state = _contentValues.getAsInteger(FormConstants.STATE);
+        if (state == FormConstants.STATE_DRAFT) {
+            showDialog(DIALOG_UNFINISHED_CONFIRM);
+        } else {
+            setResult(RESULT_VIEW_ONLY);
+            finish();
+        }
     }
 
     @Override
@@ -162,19 +213,19 @@ public class MakeFormActivity extends ActionBarActivity
             //
             // http://developer.android.com/design/patterns/navigation.html#up-vs-back
             //
-            showDialog(DIALOG_UNFINISHED_CONFIRM);
-
-            //NavUtils.navigateUpTo(this, new Intent(this, ItemListActivity.class));
+            leave();
             return true;
         } else if ( id == R.id.action_submit) {
-            submit();
+            if (validateFields()) {
+                showDialog(DIALOG_SUBMIT_CONFIRM);
+            }
         }
         return super.onOptionsItemSelected(item);
     }
 
     @Override
     public void onBackPressed() {
-        showDialog(DIALOG_UNFINISHED_CONFIRM);
+        leave();
     }
 
 
@@ -216,9 +267,7 @@ public class MakeFormActivity extends ActionBarActivity
     public void onSaveInstanceState(Bundle outState) {
         Log.i(TAG, "onSaveInstanceState");
         super.onSaveInstanceState(outState);
-
-
-        //outState.putString(FORM_UUID, _formUuid.toString());
+        collectFileds();
         outState.putParcelable(CONTENT_VALUES, _contentValues);
     }
 
@@ -238,9 +287,7 @@ public class MakeFormActivity extends ActionBarActivity
                     .setPositiveButton("存成草稿", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             dialog.dismiss();
-                            setResult(RESULT_OK);
-                            finish();
-
+                            saveAsDraft();
                         }
                     })
                     .setNegativeButton("饒他一馬", new DialogInterface.OnClickListener() {
@@ -256,6 +303,26 @@ public class MakeFormActivity extends ActionBarActivity
                             dialog.dismiss();
                         }
                     });
+            // Create the AlertDialog object and return it
+            return builder.create();
+        } else if (id == DIALOG_SUBMIT_CONFIRM) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setMessage("所有欄位都正確無誤？")
+                    .setPositiveButton("是", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            dialog.dismiss();
+
+                            submit();
+
+                        }
+                    })
+                    .setNegativeButton("否", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            dialog.dismiss();
+
+                        }
+                    });
+
             // Create the AlertDialog object and return it
             return builder.create();
         }
@@ -329,59 +396,62 @@ public class MakeFormActivity extends ActionBarActivity
             return false;
         }
 
-
         return true;
     }
 
-
-    private void submit() {
-
-        Log.i(TAG, "onSubmitButtonClicked");
-        if (!validateFields()) {
-            return;
-        }
-
-        _contentValues.put(FormConstants.STATE, FormConstants.STATE_FINISH);
-
+    private void collectFileds() {
         // Parse Event Location...
         EditText location = (EditText)findViewById(R.id.editTextLocation);
         _contentValues.put(FormConstants.LOCATION, location.getText().toString());
 
         // Parse Date value.
-        TextView dateView = (TextView)findViewById(R.id.textViewDate);
+        EditText dateView = (EditText)findViewById(R.id.editTextDate);
         _contentValues.put(FormConstants.DATE, dateView.getText().toString());
 
         // Parse Time value
-        TextView timeView = (TextView)findViewById(R.id.textViewTime);
+        EditText timeView = (EditText)findViewById(R.id.editTextTime);
         _contentValues.put(FormConstants.TIME, timeView.getText().toString());
 
         // Parse Reason field
         Spinner spinner = (Spinner)findViewById(R.id.spinner_reason);
         _contentValues.put(FormConstants.REASON, spinner.getSelectedItem().toString());
 
+        // Parse Comment Field
+        EditText comment = (EditText)findViewById(R.id.editTextComment);
+        _contentValues.put(FormConstants.COMMENT, comment.getText().toString());
+
         // Parse Vehicle License field
         EditText editText = (EditText)findViewById(R.id.editTextVehicleLicense);
-        _contentValues.put(FormConstants.VEHICLE_LICENSE, spinner.getSelectedItem().toString());
+        _contentValues.put(FormConstants.VEHICLE_LICENSE, editText.getText().toString());
 
         // Parse Police Mail from Spinner...
         spinner = (Spinner)findViewById(R.id.spinner_receiver);
         _contentValues.put(FormConstants.RECEIVER, spinner.getSelectedItem().toString());
+    }
+
+    private void saveAsDraft() {
+        collectFileds();
+        _contentValues.put(FormConstants.STATE, FormConstants.STATE_DRAFT);
+        Intent intent = new Intent();
+        intent.putExtra(FormConstants.CONTENT_VALUE, _contentValues);
+
+        setResult(RESULT_SAVE_DRAFT, intent);
+        finish();
+    }
+
+    private void submit() {
+
+        Log.i(TAG, "submit");
+        collectFileds();
+
+        _contentValues.put(FormConstants.STATE, FormConstants.STATE_FINISH);
 
         Intent intent = new Intent();
         intent.putExtra(FormConstants.CONTENT_VALUE, _contentValues);
 
-        setResult(RESULT_OK, intent);
+        setResult(RESULT_SUBMIT, intent);
         finish();
-
-
     }
-
-    public void onCancelButtonClicked(View view) {
-        // TODO
-        showDialog(DIALOG_UNFINISHED_CONFIRM);
-        //NavUtils.navigateUpTo(this, new Intent(this, ItemListActivity.class));
-    }
-
 
     public void onDateViewClicked(View view) {
 
@@ -434,7 +504,7 @@ public class MakeFormActivity extends ActionBarActivity
         if (requestCode == CAMERA_RESULT && resultCode == RESULT_OK) {
 
             UUID uuid = UUID.fromString(_contentValues.getAsString(FormConstants.UUID));
-            String photoPath = FileSystemHelper.getEventPicture(this, uuid, _currentImageIndex ).getAbsolutePath();
+            //String photoPath = FileSystemHelper.getEventPicture(this, uuid, _currentImageIndex ).getAbsolutePath();
 
             // Save Bitmap into file system.
             //String filePath = mCurrentPhotoPath;//(String)data.getExtras().get("data");  //savePicture(photo);
@@ -501,40 +571,22 @@ public class MakeFormActivity extends ActionBarActivity
 
         @Override
         public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-
-
-
+            _makeFormFragment.setDate(new GregorianCalendar(year, monthOfYear, dayOfMonth));
         }
 
     }
-
 
     private class PickTime implements TimePickerDialog.OnTimeSetListener {
         @Override
         public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+            Calendar calendar = new GregorianCalendar();
+            calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
+            calendar.set(Calendar.MINUTE, minute);
+            _makeFormFragment.setTime(calendar);
 
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
+
+
+

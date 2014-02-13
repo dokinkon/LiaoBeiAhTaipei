@@ -161,21 +161,18 @@
             android:layout_marginRight="10dp" />
 
 
-        <TextView
-            style="@android:style/TextAppearance.Holo.Medium"
-            tools:context="com.liaobeiah.app.MakeFormFragment"
-            xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:tools="http://schemas.android.com/tools"
-            android:id="@+id/textViewDate"
+        <EditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="10dp"
-            android:textIsSelectable="false"
-            android:text="2014年1月26日"
-            android:textAlignment="gravity"
-            android:layout_gravity="center"
-            android:onClick="onDateViewClicked"
-            android:clickable="true" />
+            android:inputType="text|textCapCharacters"
+            android:ems="10"
+            android:id="@+id/editTextDate"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:lines="1"
+            android:editable="false"
+            android:clickable="true"
+            android:onClick="onDateViewClicked" />
 
         <TextView
             style="@android:style/TextAppearance.Holo.Small"
@@ -200,18 +197,15 @@
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp" />
 
-        <TextView
-            style="@android:style/TextAppearance.Holo.Medium"
-            tools:context="com.liaobeiah.app.MakeFormFragment"
-            xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:tools="http://schemas.android.com/tools"
-            android:id="@+id/textViewTime"
+        <EditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="10dp"
-            android:textIsSelectable="true"
-            android:text="時間"
-            android:clickable="true"
+            android:inputType="text|textCapCharacters"
+            android:ems="10"
+            android:id="@+id/editTextTime"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:lines="1"
             android:onClick="onTimeViewClicked" />
 
         <TextView
@@ -301,6 +295,17 @@
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp" />
 
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/editTextEventType"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:focusable="false"
+            android:editable="false"
+            android:clickable="false"
+            android:visibility="visible" />
+
         <Spinner
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -336,7 +341,7 @@
             android:layout_height="wrap_content"
             android:inputType="textMultiLine"
             android:ems="10"
-            android:id="@+id/editText3"
+            android:id="@+id/editTextComment"
             android:hint="請輸入補充說明"
             android:paddingLeft="10dp"
             android:paddingRight="10dp" />
@@ -365,6 +370,17 @@
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp" />
 
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/editTextReceiver"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:focusable="false"
+            android:editable="false"
+            android:clickable="false"
+            android:visibility="visible" />
+
         <Spinner
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -380,7 +396,7 @@
     <RelativeLayout
         android:id="@+id/adLayout"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content" >
+        android:layout_height="50dp" >
     </RelativeLayout>
 
 </LinearLayout>

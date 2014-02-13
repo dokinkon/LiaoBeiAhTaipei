@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:yourapp="http://schemas.android.com/apk/res-auto">
+
+    <item android:id="@+id/action_settings"
+        android:title="設定" />
+    <item android:id="@+id/action_howto"
+        android:title="說明" />
+    <item android:id="@+id/action_about"
+        android:title="關於" />
+</menu>

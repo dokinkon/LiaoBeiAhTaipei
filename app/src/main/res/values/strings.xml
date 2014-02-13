@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">LiaoBeiAhTaipei</string>
-    <string name="dummy_button">Dummy Button</string>
-    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="app_name">交通糾察-新北市</string>
     <string name="title_activity_make_form">MakeFormActivity</string>
     <string name="title_make_form">製作檢舉表單</string>
-    <string name="title_activity_main">Main</string>
+    <string name="title_activity_main">交通糾察-新北市</string>
     <string name="hello_world">歡迎使用\n輕觸新增檢舉表單</string>
     <string name="action_settings">Settings</string>
     <string name="evidence_picture">舉證照片</string>
