@@ -131,6 +131,7 @@ public class MakeFormActivity extends ActionBarActivity
                 cursor.moveToFirst();
                 _contentValues = new ContentValues();
                 DatabaseUtils.cursorRowToContentValues(cursor, _contentValues);
+                _contentValues.put(FormConstants._ID, formId);
 
             } else {
                 _contentValues = new ContentValues();
@@ -520,7 +521,6 @@ public class MakeFormActivity extends ActionBarActivity
             cursor.moveToFirst();
             int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
             String picturePath = cursor.getString(columnIndex);
-            //cursor.close();
 
             // Copy external picture into application directory.
             UUID uuid = UUID.fromString(_contentValues.getAsString(FormConstants.UUID));
@@ -528,11 +528,12 @@ public class MakeFormActivity extends ActionBarActivity
 
             try {
                 copy(new File(picturePath), new File(dstPath));
+                generateThumbnail(uuid, _currentImageIndex);
+                pushPictureAndThumbnail(_currentImageIndex);
+                _makeFormFragment.reloadEventThumbnail(uuid, _currentImageIndex);
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
-            _makeFormFragment.reloadEventThumbnail(uuid, _currentImageIndex);
         }
     }
 

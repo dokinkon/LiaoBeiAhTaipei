@@ -132,7 +132,8 @@ public class MainFragment extends Fragment {
     public void insertForm(ContentValues contentValues) {
         DatabaseHelper helper = new DatabaseHelper(getActivity());
         SQLiteDatabase database = helper.getWritableDatabase();
-        database.insert(FormConstants.TABLE_NAME, null, contentValues);
+        //database.insert(FormConstants.TABLE_NAME, null, contentValues);
+        database.replace(FormConstants.TABLE_NAME, null, contentValues);
         database = null;
         helper = null;
         requery(getView());

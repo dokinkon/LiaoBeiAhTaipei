@@ -22,4 +22,11 @@
     <string name="title_section3">Section 3</string>
     <string name="producing_document">產生檢舉表單中...\n</string>
 
+    <string name="alert_dialog_ok">好</string>
+    <string name="alert_dialog_cancel">取消</string>
+    <string name="alert_dialog_title_delete_data">刪除此筆資料</string>
+    <string name="alert_dialog_title_delete_database">刪除所有資料</string>
+
+
+
 </resources>

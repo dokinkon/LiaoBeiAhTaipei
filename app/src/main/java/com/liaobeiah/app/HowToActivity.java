@@ -11,7 +11,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import java.util.Locale;
 
@@ -35,7 +34,7 @@ public class HowToActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_how_to);
+        setContentView(R.layout.activity_how_to_1);
 
 
 
@@ -139,8 +138,8 @@ public class HowToActivity extends ActionBarActivity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                 Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_how_to, container, false);
-            TextView textView = (TextView) rootView.findViewById(R.id.section_label);
-            textView.setText(Integer.toString(getArguments().getInt(ARG_SECTION_NUMBER)));
+            //TextView textView = (TextView) rootView.findViewById(R.id.section_label);
+            //textView.setText(Integer.toString(getArguments().getInt(ARG_SECTION_NUMBER)));
             return rootView;
         }
     }
