@@ -25,7 +25,7 @@ public class AlertDialogFragment extends DialogFragment {
 
         return new AlertDialog.Builder(getActivity())
                 .setIcon(R.drawable.ic_action_warning)
-                .setTitle(title)
+                .setTitle("KK")
                 .setPositiveButton(R.string.alert_dialog_ok,
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {

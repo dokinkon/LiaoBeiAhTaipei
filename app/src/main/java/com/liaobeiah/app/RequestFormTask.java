@@ -1,5 +1,6 @@
 package com.liaobeiah.app;
 
+import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -21,14 +22,32 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 import java.util.UUID;
+
+import javax.activation.DataHandler;
+import javax.activation.FileDataSource;
+import javax.mail.Authenticator;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Multipart;
+import javax.mail.PasswordAuthentication;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
 
 /**
  * Created by dokinkon on 2/10/14.
  */
+
 public class RequestFormTask extends AsyncTask<Bundle, Void, Void> {
+
 
 
     public interface Listener {
@@ -41,6 +60,7 @@ public class RequestFormTask extends AsyncTask<Bundle, Void, Void> {
     private Listener _listener;
 
     private static final String TAG = "RequestFormTask";
+    private ProgressDialog progressDialog;
 
     RequestFormTask(Context context, ContentValues contentValues, Listener listener) {
         _context = context;
@@ -52,10 +72,35 @@ public class RequestFormTask extends AsyncTask<Bundle, Void, Void> {
         _listener = listener;
     }
 
+    @Override
+    protected void onPreExecute() {
+        super.onPreExecute();
+        progressDialog = ProgressDialog.show(_context, "Please Wait", "Sending...");
+    }
+
 
     @Override
     protected Void doInBackground(Bundle... extras) {
 
+        requestForm();
+        sendMail();
+
+        return null;
+    }
+
+
+    @Override
+    protected void onPostExecute(Void result) {
+        super.onPostExecute(result);
+        progressDialog.dismiss();
+        progressDialog = null;
+        if (_listener!=null) {
+            _listener.onTaskFinish(0, _contentValues);
+        }
+
+    }
+
+    private void requestForm() {
         HttpClient httpClient = new DefaultHttpClient();
 
         try {
@@ -124,16 +169,130 @@ public class RequestFormTask extends AsyncTask<Bundle, Void, Void> {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        return null;
     }
 
+    private void sendMail() {
 
-    @Override
-    protected void onPostExecute(Void result) {
-        if (_listener!=null) {
-            _listener.onTaskFinish(0, _contentValues);
+        try {
+            Message message = createMessage(createSessionObject(), _contentValues);
+            Transport.send(message);
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private Message createMessage(Session session, ContentValues contentValues)
+            throws MessagingException, UnsupportedEncodingException {
+
+        MimeMessage message = new MimeMessage(session);
+        message.setFrom(new InternetAddress("dokinkon@gmail.com", "Chao-Chih Lin"));
+        message.setRecipient(Message.RecipientType.TO, new InternetAddress("dokinkon@gmail.com", "dokinkon@gmail.com"));
+        message.setSubject("TEST2");
+
+        Multipart multipart = new MimeMultipart();
+
+
+        // 1. Set message body part.
+        MimeBodyPart messageBodyPart = new MimeBodyPart();
+        try {
+            messageBodyPart.setText("敬愛的警官\n\n" + "我要檢舉交通違規，請見附加檔案。\n");
+            multipart.addBodyPart(messageBodyPart);
+        } catch (MessagingException e) {
+            e.printStackTrace();
         }
 
+        // 2. Add Event Pictures.
+        UUID uuid = UUID.fromString(contentValues.getAsString(FormConstants.UUID));
+
+        int index;
+        for (index = 0;index < 3;index++) {
+
+            File file = FileSystemHelper.getEventPicture(_context, uuid, index);
+            if (file.exists()) {
+                FileDataSource fileDataSource = new FileDataSource(file);
+                MimeBodyPart mimeBodyPart = new MimeBodyPart();
+                try {
+                    mimeBodyPart.setDataHandler(new DataHandler(fileDataSource));
+                    mimeBodyPart.setFileName(fileDataSource.getName());
+                    multipart.addBodyPart(mimeBodyPart);
+                } catch (MessagingException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }
+
+        // 3. Add Form.docx
+        File file = FileSystemHelper.getEventForm(_context, uuid);
+        FileDataSource fileDataSource = new FileDataSource(file);
+        MimeBodyPart mimeBodyPart = new MimeBodyPart();
+        try {
+            mimeBodyPart.setDataHandler(new DataHandler(fileDataSource));
+            mimeBodyPart.setFileName(fileDataSource.getName());
+            multipart.addBodyPart(mimeBodyPart);
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            message.setContent(multipart);
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        }
+
+
+        return message;
     }
+
+    private Session createSessionObject() {
+        Properties properties = new Properties();
+
+        properties.put("mail.smtp.auth", "true");
+        properties.put("mail.smtp.starttls.enable", "true");
+        properties.put("mail.smtp.host", "smtp.gmail.com");
+        properties.put("mail.smtp.port", "587");
+        properties.put("mail.smtp.debug", "true");
+        properties.put("mail.debug", "true");
+
+        //SharedPreferences preference = PreferenceManager.getDefaultSharedPreferences(this);
+        final String username = _preferences.getString("pref_email_address", "");
+        final String password = _preferences.getString("pref_email_password", "");
+
+        return Session.getInstance(properties, new Authenticator(){
+
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(username, password);
+            }
+        });
+    }
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
