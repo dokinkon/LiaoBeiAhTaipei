@@ -278,6 +278,10 @@ public class MakeFormActivity extends ActionBarActivity
         // 1. remove pictures
         // FIXME!
 
+        UUID uuid = UUID.fromString(_contentValues.getAsString(FormConstants.UUID));
+        if (!FileSystemHelper.deleteEvent(this, uuid)) {
+            Toast.makeText(this, "Failed to delete event!", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
@@ -445,7 +449,7 @@ public class MakeFormActivity extends ActionBarActivity
         Log.i(TAG, "submit");
         collectFileds();
 
-        _contentValues.put(FormConstants.STATE, FormConstants.STATE_FINISH);
+        _contentValues.put(FormConstants.STATE, FormConstants.STATE_UNSENT);
 
         Intent intent = new Intent();
         intent.putExtra(FormConstants.CONTENT_VALUE, _contentValues);

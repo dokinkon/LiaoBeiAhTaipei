@@ -1,6 +1,7 @@
 package com.liaobeiah.app;
 
 import android.content.Context;
+import android.util.Log;
 
 import java.io.File;
 import java.util.UUID;
@@ -10,19 +11,40 @@ import java.util.UUID;
  */
 public class FileSystemHelper {
 
+    private static final String TAG = "FileSystemHelper";
+
     public static boolean deleteEvent(Context context, UUID uuid) {
         File file = context.getExternalFilesDir(uuid.toString());
-        return file.delete();
+        deleteRecursive(file);
+        return true;
     }
 
     public static boolean deleteAllEvents(Context context) {
 
+        Log.i(TAG, "deleteAllEvents");
+
         File appDir = context.getExternalFilesDir(null);
+        Log.i(TAG, "AppDir : " + appDir.getAbsolutePath());
+
         File[] files = appDir.listFiles();
         for (File file : files) {
-            file.delete();
+
+            Log.i(TAG, "Folder in AppDir : " + file.getAbsolutePath());
+            deleteRecursive(file);
         }
         return true;
+    }
+
+    static void deleteRecursive(File fileOrDirectory) {
+        if (fileOrDirectory.isDirectory()) {
+            for (File child : fileOrDirectory.listFiles()) {
+                deleteRecursive(child);
+            }
+        }
+
+        if (!fileOrDirectory.delete()) {
+            Log.e(TAG, "Failed to delete : " + fileOrDirectory.getAbsolutePath() );
+        }
     }
 
     public static File getEventFolder(Context context, UUID uuid) {

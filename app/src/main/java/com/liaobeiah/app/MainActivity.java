@@ -2,9 +2,12 @@ package com.liaobeiah.app;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.BroadcastReceiver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -19,7 +22,10 @@ import android.widget.AdapterView;
 import android.widget.Toast;
 
 public class MainActivity extends ActionBarActivity
-        implements MainFragment.Callbacks, RequestFormTask.Listener {
+        implements MainFragment.Callbacks {
+
+
+
 
     private static int REQUEST_MAKE_FORM = 23;
     private static int DIALOG_DELETE_FORM_CONFIRM = 44;
@@ -28,6 +34,8 @@ public class MainActivity extends ActionBarActivity
     private static String TAG = "MainActivity";
     private static String TAG_MAIN_FRAGMENT = "MainFragment";
     private static String FIRST_LAUNCH_KEY = "FirstLaunchKey";
+
+    private BroadcastReceiver _broadcastReceiver;
 
     //private static final String username = "dokinkon@gmail.com";
     //private static final String password = "qpnlnlrpkcznillt";
@@ -52,6 +60,8 @@ public class MainActivity extends ActionBarActivity
                     .commit();
 
         }
+
+        _broadcastReceiver = new Receiver();
     }
 
     @Override
@@ -60,16 +70,24 @@ public class MainActivity extends ActionBarActivity
         Log.i(TAG, "onStart");
     }
 
-    @Override
-    public void onItemSelected(String id) {
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        IntentFilter intentFilter = new IntentFilter(BackgroundService.REFRESH_CONTENT);
+        registerReceiver(_broadcastReceiver, intentFilter);
     }
 
     @Override
-    public void onTaskFinish(int resultCode, ContentValues contentValues) {
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(_broadcastReceiver);
+    }
 
-        // TODO
-        // Remove this.
+    @Override
+    public void onItemSelected(String id) {
+
     }
 
     class ItemOperationListener implements DialogInterface.OnClickListener {
@@ -203,6 +221,7 @@ public class MainActivity extends ActionBarActivity
         Intent intent = new Intent();
         intent.setClass(MainActivity.this, BackgroundService.class);
 
+        intent.putExtra(BackgroundService.ROW_ID, contentValues.getAsLong(FormConstants._ID));
         intent.putExtra(BackgroundService.FORM_UUID, contentValues.getAsString(FormConstants.UUID));
         intent.putExtra(BackgroundService.MY_NAME, preferences.getString("pref_name", ""));
         intent.putExtra(BackgroundService.MY_ADDRESS, preferences.getString("pref_address", ""));
@@ -240,6 +259,11 @@ public class MainActivity extends ActionBarActivity
             }
 
         }
+    }
+
+    private void requery() {
+        MainFragment fragment = (MainFragment)getSupportFragmentManager().findFragmentByTag(TAG_MAIN_FRAGMENT);
+        fragment.requery();
     }
 
     @Override
@@ -283,6 +307,22 @@ public class MainActivity extends ActionBarActivity
             return builder.create();
         }
         return super.onCreateDialog(id, savedInstanced);
+    }
+
+
+
+    private class Receiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            //Log.i(TAG, "onReceive");
+
+            String action = intent.getAction();
+            if (action.equals(BackgroundService.REFRESH_CONTENT)) {
+                Log.i(TAG, "REFRESH_CONTENT");
+                requery();
+            }
+        }
     }
 
 

@@ -129,14 +129,20 @@ public class MainFragment extends Fragment {
         return rootView;
     }
 
-    public void insertForm(ContentValues contentValues) {
+    public long insertForm(ContentValues contentValues) {
         DatabaseHelper helper = new DatabaseHelper(getActivity());
         SQLiteDatabase database = helper.getWritableDatabase();
         //database.insert(FormConstants.TABLE_NAME, null, contentValues);
-        database.replace(FormConstants.TABLE_NAME, null, contentValues);
-        database = null;
-        helper = null;
+        long id = database.replace(FormConstants.TABLE_NAME, null, contentValues);
+
+        if (id==-1) {
+            Log.e(TAG, "Failed to replaceForm");
+        } else {
+            contentValues.put(FormConstants._ID, id);
+        }
+
         requery(getView());
+        return id;
     }
 
     public void deleteForm(long rowId) {
@@ -159,7 +165,10 @@ public class MainFragment extends Fragment {
     public void deleteAllEvents() {
         FileSystemHelper.deleteAllEvents(getActivity());
         requery(getView());
+    }
 
+    public void requery() {
+        requery(getView());
     }
 
     private void requery(View rootView) {
@@ -241,16 +250,16 @@ public class MainFragment extends Fragment {
                 int state = cursor.getInt(columnIndex);
                 if (state == FormConstants.STATE_DRAFT) {
                     textView.setText("草稿");
-                } else if (state == FormConstants.STATE_FINISH) {
+                } else if (state == FormConstants.STATE_UNSENT) {
+                    textView.setText("未送達");
+                } else if (state == FormConstants.STATE_SENDING){
+                    textView.setText("傳送中");
+                } else {
                     textView.setText("");
                 }
-
             }
 
-
             return true;
-
-
         }
     }
 

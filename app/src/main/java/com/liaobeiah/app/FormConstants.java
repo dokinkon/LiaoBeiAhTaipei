@@ -26,6 +26,8 @@ public interface FormConstants extends BaseColumns {
     public static final String RECEIVER = "receiver";
     public static final String STATE = "state";
 
-    public static final int STATE_DRAFT = 0;
-    public static final int STATE_FINISH = 1;
+    public static final int STATE_DRAFT   = 0;
+    public static final int STATE_SENDING = 1;
+    public static final int STATE_FINISH  = 2;
+    public static final int STATE_UNSENT  = 3;
 }
